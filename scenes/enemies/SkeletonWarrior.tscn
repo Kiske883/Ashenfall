@@ -1,0 +1,42 @@
+[gd_scene load_steps=8 format=3]
+[ext_resource type="Script" path="res://scripts/enemies/SkeletonWarriorGenerator.cs" id="1"]
+[ext_resource type="Shader" path="res://resources/art/enemies/FallenGuardianSurface.gdshader" id="2"]
+[sub_resource type="ShaderMaterial" id="Bone"]
+shader = ExtResource("2")
+shader_parameter/base_color = Color(0.57, 0.52, 0.42, 1)
+shader_parameter/weather_color = Color(0.25, 0.21, 0.15, 1)
+shader_parameter/weather_amount = 0.4
+shader_parameter/roughness_value = 0.96
+[sub_resource type="StandardMaterial3D" id="Recess"]
+albedo_color = Color(0.018, 0.014, 0.01, 1)
+roughness = 1.0
+metallic_specular = 0.0
+cull_mode = 2
+[sub_resource type="ShaderMaterial" id="Iron"]
+shader = ExtResource("2")
+shader_parameter/base_color = Color(0.38, 0.36, 0.31, 1)
+shader_parameter/weather_color = Color(0.40, 0.20, 0.085, 1)
+shader_parameter/weather_amount = 0.75
+shader_parameter/roughness_value = 0.78
+shader_parameter/metalness = 0.25
+[sub_resource type="ShaderMaterial" id="Wood"]
+shader = ExtResource("2")
+shader_parameter/base_color = Color(0.39, 0.31, 0.20, 1)
+shader_parameter/weather_color = Color(0.20, 0.18, 0.13, 1)
+shader_parameter/weather_amount = 0.7
+shader_parameter/roughness_value = 0.99
+shader_parameter/grain_scale = Vector3(55, 3, 12)
+[sub_resource type="ShaderMaterial" id="Leather"]
+shader = ExtResource("2")
+shader_parameter/base_color = Color(0.22, 0.15, 0.10, 1)
+shader_parameter/weather_color = Color(0.10, 0.085, 0.07, 1)
+shader_parameter/weather_amount = 0.65
+shader_parameter/roughness_value = 1.0
+[node name="SkeletonWarrior" type="Node3D"]
+script = ExtResource("1")
+BoneMaterial = SubResource("Bone")
+RecessMaterial = SubResource("Recess")
+IronMaterial = SubResource("Iron")
+WoodMaterial = SubResource("Wood")
+LeatherMaterial = SubResource("Leather")
+[node name="Visual" type="Node3D" parent="."]
