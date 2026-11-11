@@ -1,0 +1,107 @@
+[gd_scene load_steps=10 format=3]
+[ext_resource type="PackedScene" path="res://scenes/enemies/SkeletonWarriorV2.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/art/ArticulationComparison.cs" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/FallenGuardianPresentation.tscn" id="4"]
+[sub_resource type="StandardMaterial3D" id="GroundMaterial"]
+albedo_color = Color(0.20, 0.215, 0.215, 1)
+roughness = 0.95
+[sub_resource type="PlaneMesh" id="GroundMesh"]
+size = Vector2(60, 60)
+[sub_resource type="Environment" id="Studio"]
+background_mode = 1
+background_color = Color(0.06, 0.07, 0.08, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.66, 0.74, 0.82, 1)
+ambient_light_energy = 0.5
+ambient_light_sky_contribution = 0.0
+reflected_light_source = 1
+tonemap_mode = 2
+ssao_enabled = true
+ssao_radius = 0.18
+ssao_intensity = 1.3
+[sub_resource type="LabelSettings" id="Title"]
+font_size = 27
+font_color = Color(0.85, 0.82, 0.72, 1)
+[sub_resource type="LabelSettings" id="Body"]
+font_size = 16
+font_color = Color(0.69, 0.73, 0.72, 1)
+[sub_resource type="LabelSettings" id="Name"]
+font_size = 20
+font_color = Color(0.85, 0.82, 0.72, 1)
+[node name="ArticulationComparison" type="Node3D"]
+script = ExtResource("3")
+[node name="NeutralGround" type="MeshInstance3D" parent="."]
+mesh = SubResource("GroundMesh")
+material_override = SubResource("GroundMaterial")
+[node name="Original" parent="." instance=ExtResource("1")]
+position = Vector3(-0.636396, 0, 0.636396)
+rotation_degrees = Vector3(0, -135, 0)
+[node name="Articulated" parent="." instance=ExtResource("4")]
+position = Vector3(0.636396, 0, -0.636396)
+rotation_degrees = Vector3(0, -135, 0)
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Studio")
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-48, -28, 0)
+light_color = Color(1, 0.90, 0.76, 1)
+light_energy = 1.6
+shadow_enabled = true
+directional_shadow_max_distance = 60.0
+[node name="FillLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-30, 145, 0)
+light_color = Color(0.61, 0.75, 0.93, 1)
+light_energy = 0.6
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(5, 8.121068, 5)
+rotation_degrees = Vector3(-45, 45, 0)
+projection = 1
+size = 3.6
+far = 150.0
+current = true
+[node name="Presentation" type="CanvasLayer" parent="."]
+[node name="Title" type="Label" parent="Presentation"]
+offset_left = 36.0
+offset_top = 24.0
+text = "ASHENFALL  /  V2 / ARTICULATION FOUNDATION"
+label_settings = SubResource("Title")
+[node name="Subtitle" type="Label" parent="Presentation"]
+offset_left = 38.0
+offset_top = 63.0
+text = "REST POSE COMPARISON    /    ORIGINAL GEOMETRY, NEW PIVOTS"
+label_settings = SubResource("Body")
+[node name="Inspection" type="Button" parent="Presentation"]
+offset_left = 36.0
+offset_top = 105.0
+offset_right = 178.0
+offset_bottom = 143.0
+text = "Inspection"
+[node name="Gameplay" type="Button" parent="Presentation"]
+offset_left = 190.0
+offset_top = 105.0
+offset_right = 356.0
+offset_bottom = 143.0
+text = "Gameplay scale"
+[node name="Mode" type="Label" parent="Presentation"]
+offset_left = 374.0
+offset_top = 114.0
+label_settings = SubResource("Body")
+[node name="EnemyLabel" type="Label" parent="Presentation"]
+anchor_left = 0.22
+anchor_top = 0.83
+anchor_right = 0.95
+anchor_bottom = 0.83
+text = "ORIGINAL V2"
+label_settings = SubResource("Name")
+[node name="V2Label" type="Label" parent="Presentation"]
+anchor_left = 0.60
+anchor_top = 0.83
+anchor_right = 0.99
+anchor_bottom = 0.83
+text = "ARTICULATED V2"
+label_settings = SubResource("Name")
+[node name="Footer" type="Label" parent="Presentation"]
+offset_left = 38.0
+anchor_top = 0.94
+anchor_bottom = 0.94
+text = "Original stays fixed   |   Joint buttons: static poses   |   Slow repeat: 6 s cycle   |   Reset: original rest pose"
+label_settings = SubResource("Body")
