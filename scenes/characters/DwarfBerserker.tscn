@@ -1,0 +1,69 @@
+[gd_scene load_steps=10 format=3]
+[ext_resource type="Script" path="res://scripts/characters/DwarfBerserkerGenerator.cs" id="1"]
+[ext_resource type="Shader" path="res://resources/art/characters/DwarfBerserkerSurface.gdshader" id="2"]
+[sub_resource type="ShaderMaterial" id="Skin"]
+shader = ExtResource("2")
+shader_parameter/base_color = Color(0.50, 0.32, 0.24, 1)
+shader_parameter/weather_color = Color(0.35, 0.23, 0.17, 1)
+shader_parameter/weather_amount = 0.10
+shader_parameter/metalness = 0.0
+shader_parameter/roughness_value = 0.9
+
+[sub_resource type="ShaderMaterial" id="Recess"]
+shader = ExtResource("2")
+shader_parameter/base_color = Color(0.025, 0.018, 0.015, 1)
+shader_parameter/weather_color = Color(0.04, 0.025, 0.02, 1)
+shader_parameter/weather_amount = 0.1
+shader_parameter/metalness = 0.0
+shader_parameter/roughness_value = 0.9
+
+[sub_resource type="ShaderMaterial" id="Leather"]
+shader = ExtResource("2")
+shader_parameter/base_color = Color(0.12, 0.075, 0.045, 1)
+shader_parameter/weather_color = Color(0.23, 0.15, 0.09, 1)
+shader_parameter/weather_amount = 0.35
+shader_parameter/metalness = 0.0
+shader_parameter/roughness_value = 0.9
+
+[sub_resource type="ShaderMaterial" id="Iron"]
+shader = ExtResource("2")
+shader_parameter/base_color = Color(0.23, 0.24, 0.22, 1)
+shader_parameter/weather_color = Color(0.35, 0.15, 0.07, 1)
+shader_parameter/weather_amount = 0.65
+shader_parameter/metalness = 0.35
+shader_parameter/roughness_value = 0.9
+
+[sub_resource type="ShaderMaterial" id="Edge"]
+shader = ExtResource("2")
+shader_parameter/base_color = Color(0.48, 0.48, 0.42, 1)
+shader_parameter/weather_color = Color(0.25, 0.24, 0.20, 1)
+shader_parameter/weather_amount = 0.3
+shader_parameter/metalness = 0.65
+shader_parameter/roughness_value = 0.9
+
+[sub_resource type="ShaderMaterial" id="Hair"]
+shader = ExtResource("2")
+shader_parameter/base_color = Color(0.18, 0.085, 0.04, 1)
+shader_parameter/weather_color = Color(0.31, 0.20, 0.1, 1)
+shader_parameter/weather_amount = 0.4
+shader_parameter/metalness = 0.0
+shader_parameter/roughness_value = 0.9
+
+[sub_resource type="ShaderMaterial" id="Wood"]
+shader = ExtResource("2")
+shader_parameter/base_color = Color(0.22, 0.13, 0.065, 1)
+shader_parameter/weather_color = Color(0.12, 0.09, 0.05, 1)
+shader_parameter/weather_amount = 0.35
+shader_parameter/metalness = 0.0
+shader_parameter/roughness_value = 0.9
+
+[node name="DwarfBerserker" type="Node3D"]
+script = ExtResource("1")
+Skin = SubResource("Skin")
+Recess = SubResource("Recess")
+Leather = SubResource("Leather")
+Iron = SubResource("Iron")
+Edge = SubResource("Edge")
+Hair = SubResource("Hair")
+Wood = SubResource("Wood")
+
