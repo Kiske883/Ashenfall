@@ -6,6 +6,7 @@ namespace Ashenfall.Art;
 public partial class DwarfBerserkerPreview : Node3D
 {
     private Camera3D _camera;
+    private Button _idle, _walk;
     public override void _Ready()
     {
         _camera = GetNode<Camera3D>("Camera3D");
@@ -22,9 +23,20 @@ public partial class DwarfBerserkerPreview : Node3D
         detail.Pressed += () => _camera.Size = 3.5f; row.AddChild(detail);
         var gameplay = new Button { Text = "Gameplay / size 22", CustomMinimumSize = new Vector2(180, 38) };
         gameplay.Pressed += () => _camera.Size = 22; row.AddChild(gameplay);
-        var note = new Label { Text = "Dwarf: 1.460 m   |   Guardian: 1.931 m (soles to crown)   |   ratio: 75.61%\nStatic art only. Bald head / separate beard and axe / no animations or gameplay.", Position = new Vector2(26, 730) };
+        var animationRow = new HBoxContainer { Position = new Vector2(26, 135) }; canvas.AddChild(animationRow);
+        _idle = new Button { Text = "IDLE", ToggleMode = true, CustomMinimumSize = new Vector2(125, 38) };
+        _walk = new Button { Text = "WALK", ToggleMode = true, CustomMinimumSize = new Vector2(125, 38) };
+        animationRow.AddChild(_idle); animationRow.AddChild(_walk);
+        _idle.Pressed += () => PlayState("Idle"); _walk.Pressed += () => PlayState("Walk");
+        var note = new Label { Text = "Rest height: 1.460 m   |   Guardian: 1.931 m   |   ratio: 75.61%\nIDLE / WALK: visual-only loops, two-handed axe. Guardian reference stays stationary.", Position = new Vector2(26, 730) };
         canvas.AddChild(note);
         SetView("Isometric");
+        PlayState("Idle");
+    }
+    public void PlayState(string state)
+    {
+        GetNode<Ashenfall.Characters.DwarfBerserkerPresentation>("Dwarf").PlayState(state);
+        _idle.SetPressedNoSignal(state == "Idle"); _walk.SetPressedNoSignal(state == "Walk");
     }
     public void SetView(string view)
     {
