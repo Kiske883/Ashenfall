@@ -1,0 +1,18 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# .NET build artifacts
+**/bin/
+**/obj/
+
+# Visual Studio temporary files
+.vs/
+
+# VS Code local settings
+.vscode/
+
+# User-specific files
+*.user
+*.suo
+

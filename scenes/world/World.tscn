@@ -1,0 +1,49 @@
+[gd_scene load_steps=8 format=3]
+[ext_resource type="Script" path="res://scripts/environment/EnvironmentGenerator.cs" id="1"]
+[ext_resource type="Script" path="res://scripts/world/IsometricCamera.cs" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/environment/AshPine.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/environment/Rock.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/environment/AncientGate.tscn" id="5"]
+[ext_resource type="Environment" path="res://resources/AshenAtmosphere.tres" id="6"]
+[sub_resource type="LabelSettings" id="TitleStyle"]
+font_size = 26
+font_color = Color(0.78, 0.75, 0.63, 1)
+outline_size = 4
+outline_color = Color(0.05, 0.06, 0.06, 1)
+[node name="World" type="Node3D"]
+[node name="EnvironmentGenerator" type="Node3D" parent="."]
+script = ExtResource("1")
+TreeScene = ExtResource("3")
+RockScene = ExtResource("4")
+RuinScene = ExtResource("5")
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("6")
+[node name="Moonlight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-52, -28, 0)
+light_color = Color(0.72, 0.81, 0.92, 1)
+light_energy = 1.3
+shadow_enabled = true
+directional_shadow_max_distance = 100.0
+[node name="CameraRig" type="Node3D" parent="."]
+script = ExtResource("2")
+[node name="Camera3D" type="Camera3D" parent="CameraRig"]
+projection = 1
+size = 46.0
+far = 150.0
+current = true
+[node name="FutureActors" type="Node3D" parent="."]
+[node name="SpawnWest" type="Marker3D" parent="FutureActors"]
+position = Vector3(-0.8, 0.2, 5)
+[node name="SpawnEast" type="Marker3D" parent="FutureActors"]
+position = Vector3(0.8, 0.2, 5)
+[node name="Title" type="CanvasLayer" parent="."]
+[node name="Label" type="Label" parent="Title"]
+offset_left = 30.0
+offset_top = 24.0
+text = "ASHENFALL"
+label_settings = SubResource("TitleStyle")
+[node name="Subtitle" type="Label" parent="Title"]
+offset_left = 32.0
+offset_top = 61.0
+text = "THE ASHEN ROAD  /  ENVIRONMENT PROTOTYPE"
+modulate = Color(0.67, 0.69, 0.65, 1)

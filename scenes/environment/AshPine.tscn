@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3]
+
+[sub_resource type="StandardMaterial3D" id="Bark"]
+albedo_color = Color(0.20, 0.17, 0.15, 1)
+roughness = 1.0
+[sub_resource type="StandardMaterial3D" id="Needles"]
+albedo_color = Color(0.12, 0.22, 0.20, 1)
+roughness = 1.0
+[sub_resource type="CylinderMesh" id="Trunk"]
+top_radius = 0.18
+bottom_radius = 0.36
+height = 3.0
+radial_segments = 7
+[sub_resource type="CylinderMesh" id="Crown"]
+top_radius = 0.0
+bottom_radius = 1.7
+height = 3.0
+radial_segments = 7
+[sub_resource type="CylinderMesh" id="Top"]
+top_radius = 0.0
+bottom_radius = 1.25
+height = 2.8
+radial_segments = 7
+
+[node name="AshPine" type="Node3D"]
+[node name="Trunk" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1.5, 0)
+mesh = SubResource("Trunk")
+material_override = SubResource("Bark")
+[node name="LowerCrown" type="MeshInstance3D" parent="."]
+position = Vector3(0, 3.0, 0)
+mesh = SubResource("Crown")
+material_override = SubResource("Needles")
+[node name="UpperCrown" type="MeshInstance3D" parent="."]
+position = Vector3(0, 4.4, 0)
+mesh = SubResource("Top")
+material_override = SubResource("Needles")

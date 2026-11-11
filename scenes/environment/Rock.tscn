@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+[sub_resource type="StandardMaterial3D" id="Stone"]
+albedo_color = Color(0.32, 0.36, 0.35, 1)
+roughness = 1.0
+[sub_resource type="SphereMesh" id="Rock"]
+radius = 0.9
+height = 1.8
+radial_segments = 7
+rings = 3
+[node name="Rock" type="Node3D"]
+[node name="Stone" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.45, 0)
+scale = Vector3(1.2, 0.7, 0.85)
+mesh = SubResource("Rock")
+material_override = SubResource("Stone")
