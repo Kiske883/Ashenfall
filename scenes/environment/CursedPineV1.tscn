@@ -1,0 +1,21 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="ArrayMesh" path="res://resources/art/CursedPineV1_ProceduralBark.res" id="1"]
+[ext_resource type="ArrayMesh" path="res://resources/art/CursedPineV1_ProceduralNeedles.res" id="2"]
+[ext_resource type="Shader" path="res://resources/art/CursedBarkV1.gdshader" id="3"]
+[sub_resource type="ShaderMaterial" id="Bark"]
+shader = ExtResource("3")
+[sub_resource type="StandardMaterial3D" id="Needles"]
+vertex_color_use_as_albedo = true
+cull_mode = 2
+roughness = 0.9
+metallic_specular = 0.25
+[node name="CursedPineV1" type="Node3D"]
+metadata/triangle_count = 28642
+metadata/opaque_mesh_batches = 2
+[node name="ProceduralBark" type="MeshInstance3D" parent="."]
+mesh = ExtResource("1")
+material_override = SubResource("Bark")
+[node name="ProceduralNeedles" type="MeshInstance3D" parent="."]
+mesh = ExtResource("2")
+material_override = SubResource("Needles")

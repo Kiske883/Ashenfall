@@ -1,0 +1,127 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/environment/AshPine.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/environment/CursedPine.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/characters/Player.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/art/TreeArtComparison.cs" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/environment/CursedPineV1.tscn" id="5"]
+[sub_resource type="StandardMaterial3D" id="GroundMaterial"]
+albedo_color = Color(0.25, 0.265, 0.26, 1)
+roughness = 0.95
+[sub_resource type="PlaneMesh" id="Ground"]
+size = Vector2(30, 30)
+[sub_resource type="Environment" id="Studio"]
+background_mode = 1
+background_color = Color(0.065, 0.075, 0.08, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.67, 0.74, 0.8, 1)
+ambient_light_energy = 0.6
+reflected_light_source = 2
+tonemap_mode = 2
+ssao_enabled = true
+ssao_radius = 0.65
+ssao_intensity = 1.4
+[sub_resource type="LabelSettings" id="TitleStyle"]
+font_size = 28
+font_color = Color(0.84, 0.83, 0.74, 1)
+[sub_resource type="LabelSettings" id="BodyStyle"]
+font_size = 17
+font_color = Color(0.68, 0.72, 0.71, 1)
+[sub_resource type="LabelSettings" id="AssetStyle"]
+font_size = 21
+font_color = Color(0.84, 0.83, 0.74, 1)
+
+[node name="TreeArtComparison" type="Node3D"]
+script = ExtResource("4")
+[node name="NeutralGround" type="MeshInstance3D" parent="."]
+mesh = SubResource("Ground")
+material_override = SubResource("GroundMaterial")
+[node name="OriginalPine" parent="." instance=ExtResource("1")]
+position = Vector3(-3.65, 0, 3.65)
+[node name="CursedPineV1" parent="." instance=ExtResource("5")]
+[node name="CursedPine" parent="." instance=ExtResource("2")]
+position = Vector3(3.65, 0, -3.65)
+[node name="HeroScaleReference" parent="." instance=ExtResource("3")]
+process_mode = 4
+position = Vector3(2.21, 0.02, 0.09)
+collision_layer = 0
+collision_mask = 0
+InputEnabled = false
+[node name="Environment" type="WorldEnvironment" parent="."]
+environment = SubResource("Studio")
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-48, -32, 0)
+light_color = Color(1, 0.91, 0.77, 1)
+light_energy = 1.6
+shadow_enabled = true
+directional_shadow_max_distance = 75.0
+[node name="CoolFill" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-28, 145, 0)
+light_color = Color(0.62, 0.75, 0.91, 1)
+light_energy = 0.55
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(12, 19.27056, 12)
+rotation_degrees = Vector3(-45, 45, 0)
+projection = 1
+size = 9.8
+far = 100.0
+current = true
+[node name="Presentation" type="CanvasLayer" parent="."]
+[node name="Title" type="Label" parent="Presentation"]
+offset_left = 38.0
+offset_top = 25.0
+text = "ASHENFALL  /  ANCIENT PINE"
+label_settings = SubResource("TitleStyle")
+[node name="Subtitle" type="Label" parent="Presentation"]
+offset_left = 40.0
+offset_top = 65.0
+text = "ART PROTOTYPE 02     /     DARK FANTASY     /     Identical lighting and scale"
+label_settings = SubResource("BodyStyle")
+[node name="OriginalLabel" type="Label" parent="Presentation"]
+anchor_left = 0.055
+anchor_top = 0.79
+anchor_right = 0.30
+anchor_bottom = 0.79
+text = "01  /  ASH PINE"
+label_settings = SubResource("AssetStyle")
+[node name="OriginalDescription" type="Label" parent="Presentation"]
+anchor_left = 0.055
+anchor_top = 0.835
+anchor_right = 0.33
+anchor_bottom = 0.835
+text = "Existing world asset / unchanged"
+label_settings = SubResource("BodyStyle")
+[node name="CursedLabel" type="Label" parent="Presentation"]
+anchor_left = 0.72
+anchor_top = 0.79
+anchor_right = 0.92
+anchor_bottom = 0.79
+text = "03  /  CURSED PINE V2"
+label_settings = SubResource("AssetStyle")
+[node name="CursedDescription" type="Label" parent="Presentation"]
+anchor_left = 0.72
+anchor_top = 0.835
+anchor_right = 0.98
+anchor_bottom = 0.835
+text = "Deep greens / aged bark / rooted base"
+label_settings = SubResource("BodyStyle")
+[node name="V1Label" type="Label" parent="Presentation"]
+anchor_left = 0.385
+anchor_top = 0.79
+anchor_right = 0.68
+anchor_bottom = 0.79
+text = "02  /  CURSED PINE V1"
+label_settings = SubResource("AssetStyle")
+[node name="V1Description" type="Label" parent="Presentation"]
+anchor_left = 0.385
+anchor_top = 0.835
+anchor_right = 0.70
+anchor_bottom = 0.835
+text = "Preserved mesh / original materials"
+label_settings = SubResource("BodyStyle")
+[node name="Footer" type="Label" parent="Presentation"]
+offset_left = 40.0
+anchor_top = 0.94
+anchor_bottom = 0.94
+text = "Same ground and lights  |  45-degree orthographic view  |  Hero reference: 1.9 m  |  Visual study only"
+label_settings = SubResource("BodyStyle")
