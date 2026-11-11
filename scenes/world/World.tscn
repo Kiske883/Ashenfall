@@ -1,10 +1,13 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=11 format=3]
 [ext_resource type="Script" path="res://scripts/environment/EnvironmentGenerator.cs" id="1"]
 [ext_resource type="Script" path="res://scripts/world/IsometricCamera.cs" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/environment/AshPine.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/environment/Rock.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/environment/AncientGate.tscn" id="5"]
 [ext_resource type="Environment" path="res://resources/AshenAtmosphere.tres" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/characters/Player.tscn" id="7"]
+[ext_resource type="Script" path="res://scripts/world/WorldNavigation.cs" id="8"]
+[ext_resource type="NavigationMesh" path="res://resources/WorldNavigationMesh.tres" id="9"]
 [sub_resource type="LabelSettings" id="TitleStyle"]
 font_size = 26
 font_color = Color(0.78, 0.75, 0.63, 1)
@@ -16,6 +19,11 @@ script = ExtResource("1")
 TreeScene = ExtResource("3")
 RockScene = ExtResource("4")
 RuinScene = ExtResource("5")
+[node name="WorldNavigation" type="NavigationRegion3D" parent="." node_paths=PackedStringArray("GeometryRoot", "AgentCollider")]
+navigation_mesh = ExtResource("9")
+script = ExtResource("8")
+GeometryRoot = NodePath("../EnvironmentGenerator")
+AgentCollider = NodePath("../FutureActors/Player/CollisionShape3D")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource("6")
 [node name="Moonlight" type="DirectionalLight3D" parent="."]
@@ -24,14 +32,20 @@ light_color = Color(0.72, 0.81, 0.92, 1)
 light_energy = 1.3
 shadow_enabled = true
 directional_shadow_max_distance = 100.0
-[node name="CameraRig" type="Node3D" parent="."]
+[node name="CameraRig" type="Node3D" parent="." node_paths=PackedStringArray("FollowTarget")]
 script = ExtResource("2")
+FollowTarget = NodePath("../FutureActors/Player")
+ZoomSize = 22.0
 [node name="Camera3D" type="Camera3D" parent="CameraRig"]
 projection = 1
 size = 46.0
 far = 150.0
 current = true
 [node name="FutureActors" type="Node3D" parent="."]
+[node name="Player" parent="FutureActors" node_paths=PackedStringArray("MovementCamera", "TargetPlaneAnchor") instance=ExtResource("7")]
+position = Vector3(-0.8, 0.12, 5)
+MovementCamera = NodePath("../../CameraRig/Camera3D")
+TargetPlaneAnchor = NodePath("../../WorldNavigation")
 [node name="SpawnWest" type="Marker3D" parent="FutureActors"]
 position = Vector3(-0.8, 0.2, 5)
 [node name="SpawnEast" type="Marker3D" parent="FutureActors"]
@@ -45,5 +59,5 @@ label_settings = SubResource("TitleStyle")
 [node name="Subtitle" type="Label" parent="Title"]
 offset_left = 32.0
 offset_top = 61.0
-text = "THE ASHEN ROAD  /  ENVIRONMENT PROTOTYPE"
+text = "THE ASHEN ROAD  /  CLICK OR HOLD TO MOVE  /  WASD DEBUG"
 modulate = Color(0.67, 0.69, 0.65, 1)

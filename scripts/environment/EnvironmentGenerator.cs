@@ -19,6 +19,24 @@ public partial class EnvironmentGenerator : Node3D
         var earth = Material(new Color("343b35"));
         var stone = Material(new Color("66665c"));
         AddBox("Ground", new Vector3(TerrainSize, 0.8f, TerrainSize), new Vector3(0, -0.4f, 0), earth, true);
+        // Physical perimeter also contains WASD debug movement. No foliage-sized blockers.
+        // Layer 4 is physics containment only: it must not occlude ground picking or
+        // contribute a second obstacle footprint to terrain-edge navigation erosion.
+        var boundary = new StaticBody3D { Name = "TerrainBoundary", CollisionLayer = 8, CollisionMask = 2 };
+        AddChild(boundary);
+        foreach (float side in new[] { -1f, 1f })
+        {
+            boundary.AddChild(new CollisionShape3D
+            {
+                Position = new Vector3(side * (TerrainSize / 2 + 0.25f), 2, 0),
+                Shape = new BoxShape3D { Size = new Vector3(0.5f, 4, TerrainSize + 1) }
+            });
+            boundary.AddChild(new CollisionShape3D
+            {
+                Position = new Vector3(0, 2, side * (TerrainSize / 2 + 0.25f)),
+                Shape = new BoxShape3D { Size = new Vector3(TerrainSize + 1, 4, 0.5f) }
+            });
+        }
 
         // Broken pilgrimage road. Keep its center free for future player movement.
         int rows = Mathf.FloorToInt((TerrainSize - 4) / 1.6f);
@@ -81,6 +99,7 @@ public partial class EnvironmentGenerator : Node3D
         {
             var body = new StaticBody3D();
             mesh.AddChild(body);
+            if (name == "Ground") body.AddToGroup("navigable_ground");
             body.AddChild(new CollisionShape3D { Shape = new BoxShape3D { Size = size } });
         }
         return mesh;
