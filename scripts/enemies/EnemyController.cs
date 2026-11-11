@@ -19,7 +19,9 @@ public partial class EnemyController : CharacterBody3D
     [Export(PropertyHint.Range, "0.1,100,0.1")] public float DetectionRadius { get; set; } = 6;
     [Export(PropertyHint.Range, "0.1,100,0.1")] public float DisengagementRadius { get; set; } = 10;
     [Export(PropertyHint.Range, "0.1,100,0.1")] public float MaximumDistanceFromSpawn { get; set; } = 12;
-    [Export(PropertyHint.Range, "0,20,0.1")] public float MovementSpeed { get; set; } = 3;
+    /// <summary>Chase speed; name retained for existing scene/Inspector references.</summary>
+    [Export(PropertyHint.Range, "0,20,0.1")] public float MovementSpeed { get; set; } = 1;
+    [Export(PropertyHint.Range, "0,20,0.1")] public float ReturnSpeed { get; set; } = 0.7f;
     [Export(PropertyHint.Range, "0.1,10,0.1")] public float StoppingDistance { get; set; } = 1.3f;
     [Export(PropertyHint.Range, "0.1,10,0.1")] public float ResumeChaseDistance { get; set; } = 1.7f;
     [Export(PropertyHint.Range, "0.05,1,0.01")] public float ArrivalTolerance { get; set; } = 0.2f;
@@ -31,6 +33,10 @@ public partial class EnemyController : CharacterBody3D
     public Vector3 SpawnPosition { get; private set; }
     public int TargetUpdateCount { get; private set; }
     public bool HasPath { get; private set; }
+    // Read-only presentation clock. AI remains the sole owner of phase timing and execution.
+    public ulong AttackCycleId { get; private set; }
+    public float AttackPhaseDuration { get; private set; }
+    public float AttackPhaseRemaining => PreparingOrRecovering ? Mathf.Max(0, _attackTimer) : 0;
     private NavigationAgent3D _agent;
     private Node3D _visual;
     private float _updateTimer, _idleTimer, _stuckTimer;
@@ -71,8 +77,14 @@ public partial class EnemyController : CharacterBody3D
         {
             _attackTarget = PlayerTarget;
             _attackTimer = Mathf.Max(0.05f, AttackWindupDuration);
+            AttackPhaseDuration = _attackTimer;
+            AttackCycleId++;
         }
-        else if (next == EnemyState.AttackRecovery) _attackTimer = Mathf.Max(0.05f, AttackRecoveryDuration);
+        else if (next == EnemyState.AttackRecovery)
+        {
+            _attackTimer = Mathf.Max(0.05f, AttackRecoveryDuration);
+            AttackPhaseDuration = _attackTimer;
+        }
         else _attackTarget = null;
     }
 
@@ -173,7 +185,8 @@ public partial class EnemyController : CharacterBody3D
                     float allowance = State == EnemyState.Chase
                         ? Mathf.Max(0, Distance(GlobalPosition, PlayerTarget.GlobalPosition) - Stop)
                         : Mathf.Max(0, remaining - Arrival * 0.5f);
-                    speed = Mathf.Min(Mathf.Max(0, MovementSpeed), Mathf.Min(direction.Length(), allowance) / dt);
+                    float movementSpeed = State == EnemyState.Return ? ReturnSpeed : MovementSpeed;
+                    speed = Mathf.Min(Mathf.Max(0, movementSpeed), Mathf.Min(direction.Length(), allowance) / dt);
                     direction = direction.Normalized();
                     if (Distance(GlobalPosition, _progressPosition) >= 0.05f)
                     {

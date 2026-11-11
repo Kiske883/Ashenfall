@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="PackedScene" path="res://scenes/world/EnemySlowPursuitTest.tscn" id="1"]
+[node name="EnemySlowPursuitAlternativeTest" instance=ExtResource("1")]
+[node name="FallenGuardian" parent="." index="1"]
+MovementSpeed = 1.0
+ReturnSpeed = 1.0
+[node name="SpeedLabel" parent="Experiment" index="0"]
+text = "SLOW PURSUIT / 1.0 m/s / alternative comparison"
