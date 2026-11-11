@@ -2,10 +2,19 @@ using Godot;
 
 namespace Ashenfall.Enemies;
 
-/// <summary>Static-world navigation with explicit, bounded pursuit. No combat or perception raycasts.</summary>
+/// <summary>Bounded pursuit and logical attack preparation; no damage or hit detection.</summary>
 public partial class EnemyController : CharacterBody3D
 {
-    public enum EnemyState { Idle, Chase, Hold, Return }
+    public enum EnemyState { Idle, Chase, Hold, Return, AttackWindup, AttackRecovery }
+    [Signal] public delegate void AttackExecutedEventHandler(Node3D target, int sequence);
+    [Export] public bool AttacksEnabled { get; set; } = true;
+    [Export(PropertyHint.Range, "0.1,10,0.05")] public float AttackRange { get; set; } = 1.45f;
+    [Export(PropertyHint.Range, "0.05,10,0.05")] public float AttackWindupDuration { get; set; } = 0.6f;
+    [Export(PropertyHint.Range, "0.05,10,0.05")] public float AttackRecoveryDuration { get; set; } = 1;
+    [Export(PropertyHint.Range, "0.1,30,0.1")] public float AttackFacingSpeed { get; set; } = 10;
+    [Export] public bool ShowAttackDebug { get; set; }
+    public int AttackCount { get; private set; }
+    public float EffectiveAttackRange => Mathf.Max(Stop + 0.01f, AttackRange);
     [Export] public Node3D PlayerTarget { get; set; }
     [Export(PropertyHint.Range, "0.1,100,0.1")] public float DetectionRadius { get; set; } = 6;
     [Export(PropertyHint.Range, "0.1,100,0.1")] public float DisengagementRadius { get; set; } = 10;
@@ -26,6 +35,9 @@ public partial class EnemyController : CharacterBody3D
     private Node3D _visual;
     private float _updateTimer, _idleTimer, _stuckTimer;
     private Vector3 _progressPosition;
+    private float _attackTimer;
+    private Node3D _attackTarget;
+    private Label3D _debugLabel;
 
     public override void _Ready()
     {
@@ -33,6 +45,9 @@ public partial class EnemyController : CharacterBody3D
         _visual = GetNode<Node3D>("Visual");
         SpawnPosition = GlobalPosition;
         _progressPosition = GlobalPosition;
+        _debugLabel = new Label3D { Name = "AttackDebug", Position = new Vector3(0, 2.3f, 0),
+            Billboard = BaseMaterial3D.BillboardModeEnum.Enabled, FontSize = 32, PixelSize = 0.008f };
+        AddChild(_debugLabel);
     }
 
     private static float Distance(Vector3 a, Vector3 b) => new Vector2(a.X - b.X, a.Z - b.Z).Length();
@@ -52,6 +67,55 @@ public partial class EnemyController : CharacterBody3D
         _updateTimer = _stuckTimer = 0;
         _progressPosition = GlobalPosition;
         if (next == EnemyState.Idle) _idleTimer = Mathf.Max(0, ReacquisitionDelay);
+        if (next == EnemyState.AttackWindup)
+        {
+            _attackTarget = PlayerTarget;
+            _attackTimer = Mathf.Max(0.05f, AttackWindupDuration);
+        }
+        else if (next == EnemyState.AttackRecovery) _attackTimer = Mathf.Max(0.05f, AttackRecoveryDuration);
+        else _attackTarget = null;
+    }
+
+    private bool PreparingOrRecovering => State == EnemyState.AttackWindup || State == EnemyState.AttackRecovery;
+    private void Face(Vector3 direction, float rate, float dt)
+    {
+        direction.Y = 0;
+        if (direction.LengthSquared() < 0.0001f) return;
+        _visual.Rotation = new Vector3(0, Mathf.LerpAngle(_visual.Rotation.Y,
+            Mathf.Atan2(-direction.X, -direction.Z), 1 - Mathf.Exp(-Mathf.Max(0.1f, rate) * dt)), 0);
+    }
+
+    private void UpdateAttack(float dt)
+    {
+        if (!AttacksEnabled || (PreparingOrRecovering && _attackTarget != PlayerTarget))
+        {
+            if (PreparingOrRecovering) Transition(EnemyState.Hold);
+            return;
+        }
+        if (State == EnemyState.Hold || PreparingOrRecovering)
+            Face(PlayerTarget.GlobalPosition - GlobalPosition, AttackFacingSpeed, dt);
+        if (State == EnemyState.Hold)
+        {
+            var offset = PlayerTarget.GlobalPosition - GlobalPosition;
+            var horizontal = new Vector3(offset.X, 0, offset.Z);
+            if (horizontal.Length() <= EffectiveAttackRange && Mathf.Abs(offset.Y) <= 0.5f &&
+                (-_visual.Basis.Z).Dot(horizontal.Normalized()) >= 0.98f)
+                Transition(EnemyState.AttackWindup);
+            return; // The entry tick never consumes windup time.
+        }
+        if (!PreparingOrRecovering) return;
+        _attackTimer -= dt;
+        if (_attackTimer > 0.00001f) return;
+        if (State == EnemyState.AttackWindup)
+        {
+            // Commit recovery BEFORE notifying observers: this cycle cannot execute twice.
+            var target = _attackTarget;
+            Transition(EnemyState.AttackRecovery);
+            AttackCount++;
+            EmitSignal(SignalName.AttackExecuted, target, AttackCount);
+        }
+        else Transition(Distance(GlobalPosition, PlayerTarget.GlobalPosition) > EffectiveAttackRange
+            ? EnemyState.Chase : EnemyState.Hold);
     }
 
     private bool UpdatePath(Vector3 requested)
@@ -81,12 +145,14 @@ public partial class EnemyController : CharacterBody3D
             if (State == EnemyState.Idle && _idleTimer <= 0 && TargetValid &&
                 Distance(GlobalPosition, PlayerTarget.GlobalPosition) <= Mathf.Max(0, DetectionRadius) && !LeashExceeded())
                 Transition(EnemyState.Chase);
-            if ((State == EnemyState.Chase || State == EnemyState.Hold) && LeashExceeded())
+            if ((State == EnemyState.Chase || State == EnemyState.Hold || PreparingOrRecovering) && LeashExceeded())
                 Transition(EnemyState.Return);
             if (State == EnemyState.Chase && Distance(GlobalPosition, PlayerTarget.GlobalPosition) <= Stop + 0.01f)
                 Transition(EnemyState.Hold);
-            else if (State == EnemyState.Hold && Distance(GlobalPosition, PlayerTarget.GlobalPosition) > Resume)
+            else if (State == EnemyState.Hold && Distance(GlobalPosition, PlayerTarget.GlobalPosition) >
+                (AttacksEnabled ? Mathf.Min(Resume, EffectiveAttackRange + 0.15f) : Resume))
                 Transition(EnemyState.Chase);
+            if (State == EnemyState.Hold || PreparingOrRecovering) UpdateAttack(dt);
             if (State == EnemyState.Return && Distance(GlobalPosition, SpawnPosition) <= Arrival)
                 Transition(EnemyState.Idle);
 
@@ -128,8 +194,8 @@ public partial class EnemyController : CharacterBody3D
         velocity.Y = IsOnFloor() ? 0 : Velocity.Y + GetGravity().Y * dt;
         Velocity = velocity;
         MoveAndSlide();
-        if (speed > 0.01f)
-            _visual.Rotation = new Vector3(0, Mathf.LerpAngle(_visual.Rotation.Y,
-                Mathf.Atan2(-direction.X, -direction.Z), 1 - Mathf.Exp(-Mathf.Max(0, RotationSpeed) * dt)), 0);
+        if (speed > 0.01f) Face(direction, RotationSpeed, dt);
+        _debugLabel.Visible = ShowAttackDebug;
+        if (ShowAttackDebug) _debugLabel.Text = $"{State}  /  attacks: {AttackCount}";
     }
 }

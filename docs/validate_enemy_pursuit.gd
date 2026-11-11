@@ -32,6 +32,7 @@ func spawn(point: Vector3) -> void:
         enemy.queue_free()
         await steps(2)
     enemy = load("res://scenes/enemies/FallenGuardian.tscn").instantiate()
+    enemy.AttacksEnabled = false # Isolate the original 04B movement/state contract.
     enemy.position = point
     enemy.PlayerTarget = player
     world.add_child(enemy)

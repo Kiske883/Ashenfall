@@ -5,4 +5,5 @@
 [node name="World" parent="." instance=ExtResource("1")]
 [node name="FallenGuardian" parent="." node_paths=PackedStringArray("PlayerTarget") instance=ExtResource("2")]
 position = Vector3(0.8, 0, -2)
+ShowAttackDebug = true
 PlayerTarget = NodePath("../World/FutureActors/Player")
