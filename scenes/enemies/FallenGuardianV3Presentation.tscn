@@ -1,0 +1,66 @@
+[gd_scene load_steps=11 format=3]
+[ext_resource type="Script" path="res://scripts/enemies/FallenGuardianV3Generator.cs" id="1"]
+[ext_resource type="Script" path="res://scripts/enemies/FallenGuardianV2Generator.cs" id="2"]
+[ext_resource type="Shader" path="res://resources/art/enemies/FallenGuardianV2Surface.gdshader" id="3"]
+
+[sub_resource type="ShaderMaterial" id="Bone"]
+shader = ExtResource("3")
+shader_parameter/base_color = Color(0.57, 0.52, 0.42, 1)
+shader_parameter/weather_color = Color(0.25, 0.21, 0.15, 1)
+shader_parameter/weather_amount = 0.4
+shader_parameter/roughness_value = 0.96
+[sub_resource type="StandardMaterial3D" id="Recess"]
+albedo_color = Color(0.018, 0.014, 0.01, 1)
+roughness = 1.0
+metallic_specular = 0.0
+cull_mode = 2
+[sub_resource type="ShaderMaterial" id="Iron"]
+shader = ExtResource("3")
+shader_parameter/base_color = Color(0.31, 0.32, 0.29, 1)
+shader_parameter/weather_color = Color(0.39, 0.16, 0.065, 1)
+shader_parameter/weather_amount = 0.85
+shader_parameter/roughness_value = 0.88
+shader_parameter/metalness = 0.2
+[sub_resource type="ShaderMaterial" id="Wood"]
+shader = ExtResource("3")
+shader_parameter/base_color = Color(0.39, 0.31, 0.20, 1)
+shader_parameter/weather_color = Color(0.20, 0.18, 0.13, 1)
+shader_parameter/weather_amount = 0.7
+shader_parameter/roughness_value = 0.99
+shader_parameter/grain_scale = Vector3(55, 3, 12)
+[sub_resource type="ShaderMaterial" id="Leather"]
+shader = ExtResource("3")
+shader_parameter/base_color = Color(0.22, 0.15, 0.10, 1)
+shader_parameter/weather_color = Color(0.10, 0.085, 0.07, 1)
+shader_parameter/weather_amount = 0.65
+shader_parameter/roughness_value = 1.0
+[sub_resource type="ShaderMaterial" id="Cloth"]
+shader = ExtResource("3")
+shader_parameter/base_color = Color(0.22, 0.085, 0.09, 1)
+shader_parameter/weather_color = Color(0.09, 0.08, 0.075, 1)
+shader_parameter/weather_amount = 0.7
+shader_parameter/roughness_value = 1.0
+shader_parameter/grain_scale = Vector3(70, 50, 12)
+[sub_resource type="StandardMaterial3D" id="Eyes"]
+albedo_color = Color(0.22, 0.008, 0.003, 1)
+emission_enabled = true
+emission = Color(0.85, 0.014, 0.004, 1)
+emission_energy_multiplier = 1.8
+roughness = 1.0
+metallic_specular = 0.0
+cull_mode = 2
+
+[node name="FallenGuardianV3Presentation" type="Node3D"]
+script = ExtResource("2")
+IronMaterial = SubResource("Iron")
+ClothMaterial = SubResource("Cloth")
+EyeMaterial = SubResource("Eyes")
+[node name="Anatomy" type="Node3D" parent="."]
+script = ExtResource("1")
+BoneMaterial = SubResource("Bone")
+RecessMaterial = SubResource("Recess")
+IronMaterial = SubResource("Iron")
+WoodMaterial = SubResource("Wood")
+LeatherMaterial = SubResource("Leather")
+
+[node name="Visual" type="Node3D" parent="Anatomy"]
