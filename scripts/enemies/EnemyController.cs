@@ -1,11 +1,12 @@
 using Godot;
+using Ashenfall.Combat;
 
 namespace Ashenfall.Enemies;
 
 /// <summary>Bounded pursuit and logical attack preparation; no damage or hit detection.</summary>
 public partial class EnemyController : CharacterBody3D
 {
-    public enum EnemyState { Idle, Chase, Hold, Return, AttackWindup, AttackRecovery }
+    public enum EnemyState { Idle, Chase, Hold, Return, AttackWindup, AttackRecovery, Defeated }
     [Signal] public delegate void AttackExecutedEventHandler(Node3D target, int sequence);
     [Export] public bool AttacksEnabled { get; set; } = true;
     [Export(PropertyHint.Range, "0.1,10,0.05")] public float AttackRange { get; set; } = 1.45f;
@@ -45,6 +46,20 @@ public partial class EnemyController : CharacterBody3D
     private Node3D _attackTarget;
     private Label3D _debugLabel;
 
+    /// <summary>Terminal gameplay state. Existing AI transitions and attack clocks stop.</summary>
+    public void Defeat()
+    {
+        if (State == EnemyState.Defeated) return;
+        State = EnemyState.Defeated;
+        HasPath = false;
+        _attackTarget = null;
+        PlayerTarget = null;
+        _attackTimer = 0;
+        Velocity = Vector3.Zero;
+        if (GodotObject.IsInstanceValid(_debugLabel)) _debugLabel.Visible = false;
+        SetPhysicsProcess(false);
+    }
+
     public override void _Ready()
     {
         _agent = GetNode<NavigationAgent3D>("NavigationAgent3D");
@@ -60,7 +75,8 @@ public partial class EnemyController : CharacterBody3D
     private float Arrival => Mathf.Max(0.05f, ArrivalTolerance);
     private float Stop => Mathf.Max(Arrival, StoppingDistance);
     private float Resume => Mathf.Max(Stop + 0.1f, ResumeChaseDistance);
-    private bool TargetValid => GodotObject.IsInstanceValid(PlayerTarget) && PlayerTarget.IsInsideTree();
+    private bool TargetValid => GodotObject.IsInstanceValid(PlayerTarget) && PlayerTarget.IsInsideTree() &&
+        (PlayerTarget.GetNodeOrNull<HealthComponent>("Health") is not { IsAlive: false });
     private bool LeashExceeded() => !TargetValid ||
         Distance(GlobalPosition, PlayerTarget.GlobalPosition) > Mathf.Max(DetectionRadius + 0.1f, DisengagementRadius) ||
         Distance(SpawnPosition, GlobalPosition) >= Mathf.Max(Arrival, MaximumDistanceFromSpawn) ||

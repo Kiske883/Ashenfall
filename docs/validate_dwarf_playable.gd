@@ -4,10 +4,18 @@ var driver: Node
 var dwarf: Node3D
 var axe: Node3D
 var max_grip_error := 0.0
+var max_grip_context := ""
 var scale_preserved := true
 var observed_walk := false
 var observed_chase_speed := false
 var observed_return_speed := false
+var combat_mode := false
+
+func active_walk() -> bool:
+    return dwarf.get_node("AnimationPlayer").current_animation == ("Combat/CombatWalk" if combat_mode else "Walk")
+
+func active_idle() -> bool:
+    return dwarf.get_node("AnimationPlayer").current_animation == ("Combat/GuardB" if combat_mode else "Idle")
 
 func steps(count: int) -> void:
     for i in count:
@@ -19,11 +27,19 @@ func steps(count: int) -> void:
             observed_return_speed = observed_return_speed or (enemy.State == 3 and absf(speed-0.7)<0.01)
         if is_instance_valid(dwarf):
             scale_preserved = scale_preserved and dwarf.scale.is_equal_approx(Vector3.ONE)
-            observed_walk = observed_walk or str(dwarf.ActiveClip) == "Walk"
+            observed_walk = observed_walk or active_walk()
             for side in ["Left", "Right"]:
                 var hand: Node3D = dwarf.find_child(side+"Gauntlet", true, false).get_node("GripPoint")
                 var grip: Node3D = axe.get_node(side+"Grip")
-                max_grip_error = maxf(max_grip_error, hand.global_position.distance_to(grip.global_position))
+                var grip_error := hand.global_position.distance_to(grip.global_position)
+                if grip_error > max_grip_error:
+                    max_grip_error = grip_error
+                    var shoulder: Node3D = dwarf.find_child(side+"ShoulderPivot",true,false)
+                    var elbow: Node3D = dwarf.find_child(side+"ElbowPivot",true,false)
+                    var wrist: Node3D = dwarf.find_child(side+"WristPivot",true,false)
+                    var reach := shoulder.global_position.distance_to(elbow.global_position)+elbow.global_position.distance_to(wrist.global_position)
+                    var demand := shoulder.global_position.distance_to(wrist.global_position+grip.global_position-hand.global_position)
+                    max_grip_context = "%s clip=%s t=%.3f actor=%s hand=%s grip=%s reach=%.7f demand=%.7f excess=%.7f" % [side, dwarf.get_node("AnimationPlayer").current_animation, dwarf.get_node("AnimationPlayer").current_animation_position, player.global_position, hand.global_position, grip.global_position, reach, demand, demand-reach]
 
 func capture(label: String) -> void:
     if "--capture" not in OS.get_cmdline_user_args(): return
@@ -48,6 +64,7 @@ func mouse(pressed: bool, point: Vector3) -> void:
 func run_checks() -> void:
     root.size = Vector2i(1280,800)
     var legacy := "--legacy-five-meter" in OS.get_cmdline_user_args()
+    combat_mode = not legacy
     var speed := 5.0 if legacy else 2.5
     var reference := 0.14/(1.4*0.6) if legacy else 0.5/(0.6*0.55)
     var cycle := 1.4 if legacy else 0.6
@@ -67,7 +84,8 @@ func run_checks() -> void:
     var baseline: CharacterBody3D = load("res://scenes/characters/Player.tscn").instantiate()
     check(player.get_script() == baseline.get_script() and is_equal_approx(player.MovementSpeed,speed), "Original PlayerController with scene-selected speed: "+str(speed))
     check(is_equal_approx(baseline.MovementSpeed,5), "Original player prefab default remains 5 m/s")
-    check(is_equal_approx(driver.WalkReferenceSpeed,reference) and is_equal_approx(dwarf.get_node("AnimationPlayer").get_animation("Walk").length,cycle), "Correct approved animation and calibrated reference selected")
+    var walk_name := "Combat/CombatWalk" if combat_mode else "Walk"
+    check(is_equal_approx(driver.WalkReferenceSpeed,reference) and is_equal_approx(dwarf.get_node("AnimationPlayer").get_animation(walk_name).length,cycle), "Correct approved animation and calibrated reference selected")
     check(player.get_node("CollisionShape3D").shape == baseline.get_node("CollisionShape3D").shape and player.collision_mask == baseline.collision_mask and player.collision_layer == baseline.collision_layer, "Original player collision resource and layers/masks retained")
     var agent: NavigationAgent3D = player.get_node("NavigationAgent3D")
     check(is_equal_approx(agent.radius,0.32) and is_equal_approx(agent.height,1.9) and not agent.avoidance_enabled, "Original navigation capsule configuration retained")
@@ -79,7 +97,7 @@ func run_checks() -> void:
     check(not dwarf.is_processing() and driver.process_physics_priority > player.process_physics_priority, "One presentation clock samples after player physics")
     check(dwarf.find_child("Model",true,false).get_meta("triangle_count") == 10336, "Approved mesh triangle count retained")
     check(demo.find_children("*","CharacterBody3D",true,false).size()==2 and enemy.PlayerTarget==player, "Same single player and Guardian interaction target")
-    check(enemy.State==0 and player.is_on_floor() and enemy.is_on_floor() and str(dwarf.ActiveClip)=="Idle", "Safe grounded spawn, player and enemy idle")
+    check(enemy.State==0 and player.is_on_floor() and enemy.is_on_floor() and active_idle(), "Safe grounded spawn, player and enemy idle")
     check(is_equal_approx(enemy.MovementSpeed,1) and is_equal_approx(enemy.ReturnSpeed,0.7) and is_equal_approx(enemy.AttackWindupDuration,0.6) and is_equal_approx(enemy.AttackRecoveryDuration,1), "Enemy speeds and attack timing unchanged")
     check(rig.FollowTarget==player and is_equal_approx(camera.size,22), "Existing camera follows same actor at size 22")
     var orientation := camera.global_basis
@@ -89,7 +107,7 @@ func run_checks() -> void:
         var start := player.global_position
         Input.action_press(action); await steps(30)
         check(absf(distance(player.global_position,start)-speed*0.5)<0.15, action+" moves at configured speed")
-        check(str(dwarf.ActiveClip)=="Walk" and absf(driver.ActualHorizontalSpeed-speed)<0.03, action+" selects Walk from real displacement")
+        check(active_walk() and absf(driver.ActualHorizontalSpeed-speed)<0.03, action+" selects Walk from real displacement")
         var facing: Vector3 = -player.get_node("Visual").global_basis.z
         var velocity: Vector3 = driver.ActualHorizontalVelocity
         check(facing.dot(velocity.normalized())>0.995, action+" dwarf faces actual movement using local -Z")
@@ -101,7 +119,7 @@ func run_checks() -> void:
         var advance := fposmod(animator.current_animation_position-phase,cycle)
         check(absf(advance-driver.WalkPlaybackRate/60)<0.001, "Walk advances once per physics tick at synchronized rate")
         Input.action_release(action); await steps(25)
-        check(str(dwarf.ActiveClip)=="Idle" and driver.WalkPlaybackRate==0 and is_equal_approx(animator.speed_scale,1), "Stopping selects unscaled Idle")
+        check(active_idle() and driver.WalkPlaybackRate==0 and is_equal_approx(animator.speed_scale,1), "Stopping selects unscaled Idle")
     check(camera.global_basis.is_equal_approx(orientation) and rig.global_position.distance_to(player.global_position+rig.FollowOffset)<0.15, "Camera orientation and smooth following preserved")
     # Unsaturated calibration proves the clock responds to actual speed, not a fixed cap.
     await reset_actor(Vector3(-0.8,0.12,5))
@@ -115,7 +133,7 @@ func run_checks() -> void:
     var sliding: Vector3 = driver.ActualHorizontalVelocity
     check(absf(sliding.x)<0.05 and sliding.z>speed*0.6 and (-player.get_node("Visual").global_basis.z).dot(sliding.normalized())>0.99, "Wall-slide facing follows actual direction rather than desired diagonal")
     Input.action_press("move_right"); await steps(35)
-    check(driver.ActualHorizontalSpeed<0.02 and str(dwarf.ActiveClip)=="Idle", "Blocked movement selects Idle despite held input")
+    check(driver.ActualHorizontalSpeed<0.02 and active_idle(), "Blocked movement selects Idle despite held input")
     check(player.global_position.x<19.7 and player.is_on_floor(), "Original physical boundary keeps dwarf inside terrain")
     Input.action_release("move_right"); Input.action_release("move_down")
     await reset_actor(Vector3(-0.8,0.12,5))
@@ -157,6 +175,6 @@ func run_checks() -> void:
     check(observed_chase_speed and observed_return_speed, "Observed Guardian moving at Chase 1.0 and Return 0.7 m/s")
     check(observed_walk and scale_preserved and max_grip_error<0.00005, "Scale and both axe grips preserved throughout movement, turning and encounters")
     check(str(ProjectSettings.get_setting("application/run/main_scene"))=="res://scenes/world/World.tscn", "Default F5 scene unchanged")
-    print("DWARF_PLAYABLE max_grip_error=",max_grip_error," default_speed=",player.MovementSpeed," reference_speed=",driver.WalkReferenceSpeed)
+    print("DWARF_PLAYABLE max_grip_error=",max_grip_error," context=",max_grip_context," default_speed=",player.MovementSpeed," reference_speed=",driver.WalkReferenceSpeed)
     print("Dwarf playable checks: ",failures," failures")
     quit(0 if failures == 0 else 1)

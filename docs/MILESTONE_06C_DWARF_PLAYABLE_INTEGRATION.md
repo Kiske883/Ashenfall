@@ -1,5 +1,7 @@
 # Milestone 06C - Definitive playable Dwarf Berserker
 
+> Historical 06C configuration: Milestone 06D now adds Guard B combat locomotion and the visual Space axe attack to this same scene. See `docs/MILESTONE_06D_PLAYABLE_COMBAT_INTEGRATION.md` for the current playable configuration; the 06C locomotion experiments remain available.
+
 The user manually approved the grounded 2.5 m/s locomotion from 06C.1. This finalization promotes that exact configuration to **`res://scenes/world/AshenfallDwarfPlayableDemo.tscn`**. Consolidation is ready for final review; nothing is staged or committed.
 
 ## Launch

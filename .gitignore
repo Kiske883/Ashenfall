@@ -1,3 +1,7 @@
+# Python
+__pycache__/
+*.pyc
+
 # Godot 4+ specific ignores
 .godot/
 /android/
@@ -16,5 +20,15 @@
 *.user
 *.suo
 
-
 *.png.import
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+# Logs and temporary files
+*.log
+*.tmp

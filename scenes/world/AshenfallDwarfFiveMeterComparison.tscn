@@ -4,7 +4,10 @@
 [node name="AshenfallDwarfFiveMeterComparison" instance=ExtResource("1")]
 [node name="DwarfPresentation" parent="." index="2"]
 PresentationScene = ExtResource("2")
+CombatMode = false
 MovementSpeedOverride = 5.0
 WalkReferenceSpeed = 0.166666667
 MaximumWalkPlaybackRate = 2.0
 RateSmoothingSeconds = 0.1
+[node name="PlayerMelee" parent="." index="3"]
+Enabled = false

@@ -6,7 +6,10 @@
 [node name="DwarfPresentation" parent="." index="2"]
 script = ExtResource("2")
 PresentationScene = ExtResource("3")
+CombatMode = false
 ExperimentalMovementSpeed = 2.5
 WalkReferenceSpeed = 1.515151515
 MaximumWalkPlaybackRate = 2.0
 RateSmoothingSeconds = 0.0
+[node name="PlayerMelee" parent="." index="3"]
+Enabled = false

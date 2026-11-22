@@ -1,4 +1,5 @@
 using Godot;
+using System;
 
 namespace Ashenfall.Characters;
 
@@ -26,6 +27,10 @@ public partial class PlayerController : CharacterBody3D
 
     public bool HasDestination { get; private set; }
     public Vector3 Destination { get; private set; }
+    /// <summary>Optional physics-time click resolver. Returning true consumes this click before ground picking.</summary>
+    public Func<Vector2, bool> TryConsumeWorldClick { get; set; }
+    public bool MovementLocked { get; private set; }
+    public Vector3 VisualForward => -_visual.GlobalBasis.Z;
     private Node3D _visual;
     private NavigationAgent3D _agent;
     private bool _mouseHeld;
@@ -107,6 +112,9 @@ public partial class PlayerController : CharacterBody3D
         _stuckTime = 0;
     }
 
+    /// <summary>Suppresses horizontal motion for a committed action; gravity and queued mouse orders remain active.</summary>
+    public void SetMovementLocked(bool locked) => MovementLocked = locked;
+
     public override void _PhysicsProcess(double delta)
     {
         float dt = (float)delta;
@@ -135,7 +143,12 @@ public partial class PlayerController : CharacterBody3D
             _holdTimer -= dt;
             if (_pendingClick || (_mouseHeld && _holdTimer <= 0))
             {
-                TrySetScreenDestination(_cursor);
+                if (TryConsumeWorldClick?.Invoke(_cursor) == true)
+                {
+                    _mouseHeld = false;
+                    CancelDestination();
+                }
+                else TrySetScreenDestination(_cursor);
                 _pendingClick = false;
                 _holdTimer = HoldUpdateInterval;
             }
@@ -169,6 +182,8 @@ public partial class PlayerController : CharacterBody3D
                 }
             }
         }
+
+        if (MovementLocked) { direction = Vector3.Zero; speed = 0; }
 
         var velocity = Velocity;
         velocity.X = direction.X * speed;

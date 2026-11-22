@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsTestProject>true</IsTestProject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.34" />
+    <ProjectReference Include="..\Ashenfall.Api\Ashenfall.Api.csproj" />
+    <ProjectReference Include="..\Ashenfall.CatalogPublisher\Ashenfall.CatalogPublisher.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\MigrationReview\CharacterPersistence09B.sql" Link="MigrationReview\CharacterPersistence09B.sql" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\MigrationReview\CharacterPersistence09B.Rollback.sql" Link="MigrationReview\CharacterPersistence09B.Rollback.sql" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="..\..\scripts\catalog\CatalogData.cs" Link="GodotCatalog\CatalogData.cs" />
+    <Compile Include="..\..\scripts\catalog\CatalogContentHash.cs" Link="GodotCatalog\CatalogContentHash.cs" />
+    <Compile Include="..\..\scripts\catalog\CatalogCodec.cs" Link="GodotCatalog\CatalogCodec.cs" />
+    <Compile Include="..\..\scripts\catalog\CatalogApiClient.cs" Link="GodotCatalog\CatalogApiClient.cs" />
+    <Compile Include="..\..\scripts\catalog\CatalogService.cs" Link="GodotCatalog\CatalogService.cs" />
+    <Compile Include="..\..\scripts\catalog\GameplayStatsResolver.cs" Link="GodotCatalog\GameplayStatsResolver.cs" />
+    <Compile Include="..\..\scripts\combat\CombatDamageCalculator.cs" Link="Combat\CombatDamageCalculator.cs" />
+  </ItemGroup>
+</Project>

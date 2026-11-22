@@ -1,0 +1,42 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/catalog/CatalogAdventureBootstrap.cs" id="1"]
+[ext_resource type="Script" path="res://scripts/catalog/GuardianCatalogOverride.cs" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/world/AshenfallFirstAdventure.tscn" id="3"]
+
+[sub_resource type="Resource" id="RoadOverride"]
+script = ExtResource("2")
+GuardianPath = NodePath("FallenGuardian")
+OverrideWindup = true
+WindupSeconds = 1.2
+
+[sub_resource type="Resource" id="WestOverride"]
+script = ExtResource("2")
+GuardianPath = NodePath("GuardianWest")
+OverrideWindup = true
+WindupSeconds = 1.2
+OverrideDetectionRadius = true
+DetectionRadius = 5.5
+OverrideDisengagementRadius = true
+DisengagementRadius = 8.0
+OverrideMaximumDistanceFromSpawn = true
+MaximumDistanceFromSpawn = 8.0
+
+[sub_resource type="Resource" id="EastOverride"]
+script = ExtResource("2")
+GuardianPath = NodePath("GuardianEast")
+OverrideWindup = true
+WindupSeconds = 1.2
+OverrideDetectionRadius = true
+DetectionRadius = 5.5
+OverrideDisengagementRadius = true
+DisengagementRadius = 8.0
+OverrideMaximumDistanceFromSpawn = true
+MaximumDistanceFromSpawn = 8.0
+
+[node name="AshenfallCatalogAdventure" type="Node"]
+script = ExtResource("1")
+AdventureScene = ExtResource("3")
+RoadOverride = SubResource("RoadOverride")
+WestOverride = SubResource("WestOverride")
+EastOverride = SubResource("EastOverride")

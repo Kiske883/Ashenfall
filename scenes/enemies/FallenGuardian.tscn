@@ -1,7 +1,11 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=9 format=3]
 [ext_resource type="Script" path="res://scripts/enemies/EnemyController.cs" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/FallenGuardianV3AttackPresentation.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/enemies/EnemyAnimationController.cs" id="3"]
+[ext_resource type="Script" path="res://scripts/combat/MeleeTarget.cs" id="4"]
+[ext_resource type="Script" path="res://scripts/combat/HealthComponent.cs" id="5"]
+[ext_resource type="Script" path="res://scripts/enemies/EnemyDeathController.cs" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/ui/WorldHealthBar.tscn" id="7"]
 [sub_resource type="CapsuleShape3D" id="Body"]
 radius = 0.32
 height = 1.9
@@ -25,3 +29,18 @@ avoidance_enabled = false
 script = ExtResource("3")
 Actor = NodePath("..")
 Player = NodePath("../Visual/AnimationPlayer")
+[node name="Health" type="Node" parent="."]
+script = ExtResource("5")
+MaximumHealth = 100
+[node name="MeleeTarget" type="Node" parent="." node_paths=PackedStringArray("Health")]
+script = ExtResource("4")
+Health = NodePath("../Health")
+[node name="HealthBar" parent="." node_paths=PackedStringArray("Health") instance=ExtResource("7")]
+position = Vector3(0, 2.2, 0)
+Health = NodePath("../Health")
+[node name="DeathController" type="Node" parent="." node_paths=PackedStringArray("Health", "Actor", "Target", "BodyShape")]
+script = ExtResource("6")
+Health = NodePath("../Health")
+Actor = NodePath("..")
+Target = NodePath("../MeleeTarget")
+BodyShape = NodePath("../CollisionShape3D")

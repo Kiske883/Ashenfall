@@ -1,9 +1,18 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=10 format=3]
 [ext_resource type="PackedScene" path="res://scenes/world/AshenfallPlayableDemo.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/characters/DwarfPlayerPresentation.cs" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/characters/DwarfBerserkerGroundedExperiment.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/characters/DwarfCombatGuardImpactC.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/combat/PlayerMeleeController.cs" id="4"]
+[ext_resource type="Script" path="res://scripts/combat/MeleeDamageController.cs" id="5"]
+[ext_resource type="Script" path="res://scripts/combat/HealthComponent.cs" id="6"]
+[ext_resource type="Script" path="res://scripts/characters/PlayerDefeatController.cs" id="7"]
+[ext_resource type="Script" path="res://scripts/combat/EnemyMeleeDamageController.cs" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PlayerHealthHud.tscn" id="9"]
 [node name="AshenfallDwarfPlayableDemo" instance=ExtResource("1")]
-[node name="DwarfPresentation" type="Node" parent="." node_paths=PackedStringArray("Actor")]
+[node name="Health" type="Node" parent="World/FutureActors/Player"]
+script = ExtResource("6")
+MaximumHealth = 100
+[node name="DwarfPresentation" type="Node" parent="." node_paths=PackedStringArray("Actor", "MeleeController")]
 script = ExtResource("2")
 Actor = NodePath("../World/FutureActors/Player")
 PresentationScene = ExtResource("3")
@@ -11,3 +20,30 @@ MovementSpeedOverride = 2.5
 WalkReferenceSpeed = 1.515151515
 MaximumWalkPlaybackRate = 2.0
 RateSmoothingSeconds = 0.0
+CombatMode = true
+AttackKey = 32
+CombatLocomotionBlendSeconds = 0.18
+NaturalWalkMotion = true
+MeleeController = NodePath("../PlayerMelee")
+[node name="PlayerMelee" type="Node" parent="." node_paths=PackedStringArray("Actor")]
+script = ExtResource("4")
+Actor = NodePath("../World/FutureActors/Player")
+[node name="MeleeDamage" type="Node" parent="." node_paths=PackedStringArray("Melee")]
+script = ExtResource("5")
+Melee = NodePath("../PlayerMelee")
+Damage = 25
+[node name="EnemyMeleeDamage" type="Node" parent="." node_paths=PackedStringArray("Actor", "AttackerHealth", "TargetHealth")]
+script = ExtResource("8")
+Actor = NodePath("../FallenGuardian")
+AttackerHealth = NodePath("../FallenGuardian/Health")
+TargetHealth = NodePath("../World/FutureActors/Player/Health")
+Damage = 10
+ImpactDelay = 0.1
+[node name="PlayerDefeat" type="Node" parent="." node_paths=PackedStringArray("Health", "Actor", "Melee", "Presentation")]
+script = ExtResource("7")
+Health = NodePath("../World/FutureActors/Player/Health")
+Actor = NodePath("../World/FutureActors/Player")
+Melee = NodePath("../PlayerMelee")
+Presentation = NodePath("../DwarfPresentation")
+[node name="PlayerHealthHud" parent="." node_paths=PackedStringArray("Health") instance=ExtResource("9")]
+Health = NodePath("../World/FutureActors/Player/Health")

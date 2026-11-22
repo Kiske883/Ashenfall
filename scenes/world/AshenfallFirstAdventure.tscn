@@ -1,0 +1,91 @@
+[gd_scene load_steps=11 format=3]
+[ext_resource type="PackedScene" path="res://scenes/world/AshenfallDwarfPlayableDemo.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/FallenGuardian.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/world/EncounterZone.cs" id="3"]
+[ext_resource type="Script" path="res://scripts/combat/EnemyMeleeDamageController.cs" id="4"]
+[ext_resource type="Script" path="res://scripts/world/AdventureObjective.cs" id="5"]
+[ext_resource type="Script" path="res://scripts/world/AdventureSession.cs" id="6"]
+[ext_resource type="Script" path="res://scripts/world/EncounterResetController.cs" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui/AdventureHud.tscn" id="8"]
+[ext_resource type="Script" path="res://scripts/world/AdventureCombatFeedback.cs" id="9"]
+[ext_resource type="Environment" path="res://resources/AdventureAtmosphere.tres" id="10"]
+[node name="AshenfallFirstAdventure" instance=ExtResource("1")]
+[node name="DwarfPresentation" parent="."]
+DefeatAnimationPath = "res://resources/animations/DwarfDefeatFall.tres"
+[node name="WorldEnvironment" parent="World"]
+environment = ExtResource("10")
+[node name="Moonlight" parent="World"]
+light_energy = 1.55
+[node name="FallenGuardian" parent="."]
+AttackWindupDuration = 1.2
+[node name="GuardianWest" parent="." node_paths=PackedStringArray("PlayerTarget") instance=ExtResource("2")]
+position = Vector3(-5, 0, -13)
+PlayerTarget = NodePath("../World/FutureActors/Player")
+DetectionRadius = 5.5
+AttackWindupDuration = 1.2
+DisengagementRadius = 8.0
+MaximumDistanceFromSpawn = 8.0
+[node name="GuardianEast" parent="." node_paths=PackedStringArray("PlayerTarget") instance=ExtResource("2")]
+position = Vector3(5, 0, -13)
+PlayerTarget = NodePath("../World/FutureActors/Player")
+DetectionRadius = 5.5
+AttackWindupDuration = 1.2
+DisengagementRadius = 8.0
+MaximumDistanceFromSpawn = 8.0
+[node name="WestDamage" type="Node" parent="." node_paths=PackedStringArray("Actor", "AttackerHealth", "TargetHealth")]
+script = ExtResource("4")
+Actor = NodePath("../GuardianWest")
+AttackerHealth = NodePath("../GuardianWest/Health")
+TargetHealth = NodePath("../World/FutureActors/Player/Health")
+Damage = 10
+ImpactDelay = 0.1
+[node name="EastDamage" type="Node" parent="." node_paths=PackedStringArray("Actor", "AttackerHealth", "TargetHealth")]
+script = ExtResource("4")
+Actor = NodePath("../GuardianEast")
+AttackerHealth = NodePath("../GuardianEast/Health")
+TargetHealth = NodePath("../World/FutureActors/Player/Health")
+Damage = 10
+ImpactDelay = 0.1
+[node name="RoadZone" type="Node3D" parent="." node_paths=PackedStringArray("Enemy", "Player")]
+position = Vector3(0, 0, -5)
+script = ExtResource("3")
+Enemy = NodePath("../FallenGuardian")
+Player = NodePath("../World/FutureActors/Player")
+ActivationRadius = 5.5
+ReleaseRadius = 8.0
+[node name="WestZone" type="Node3D" parent="." node_paths=PackedStringArray("Enemy", "Player")]
+position = Vector3(-5, 0, -13)
+script = ExtResource("3")
+Enemy = NodePath("../GuardianWest")
+Player = NodePath("../World/FutureActors/Player")
+ActivationRadius = 5.5
+ReleaseRadius = 8.0
+[node name="EastZone" type="Node3D" parent="." node_paths=PackedStringArray("Enemy", "Player")]
+position = Vector3(5, 0, -13)
+script = ExtResource("3")
+Enemy = NodePath("../GuardianEast")
+Player = NodePath("../World/FutureActors/Player")
+ActivationRadius = 5.5
+ReleaseRadius = 8.0
+[node name="EasternRuinGoal" type="Marker3D" parent="."]
+position = Vector3(5.2, 0, -7)
+[node name="Objective" type="Node" parent="." node_paths=PackedStringArray("Player", "PlayerHealth", "Goal")]
+script = ExtResource("5")
+Player = NodePath("../World/FutureActors/Player")
+PlayerHealth = NodePath("../World/FutureActors/Player/Health")
+Goal = NodePath("../EasternRuinGoal")
+GoalRadius = 1.8
+[node name="Session" type="Node" parent="." node_paths=PackedStringArray("Objective", "PlayerHealth", "Player", "Melee")]
+script = ExtResource("6")
+Objective = NodePath("../Objective")
+PlayerHealth = NodePath("../World/FutureActors/Player/Health")
+Player = NodePath("../World/FutureActors/Player")
+Melee = NodePath("../PlayerMelee")
+[node name="EncounterReset" type="Node" parent="."]
+script = ExtResource("7")
+[node name="AdventureHud" parent="." node_paths=PackedStringArray("Objective", "Session", "Reset") instance=ExtResource("8")]
+Objective = NodePath("../Objective")
+Session = NodePath("../Session")
+Reset = NodePath("../EncounterReset")
+[node name="CombatFeedback" type="Node3D" parent="."]
+script = ExtResource("9")

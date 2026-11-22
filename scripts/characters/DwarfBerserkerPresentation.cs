@@ -26,7 +26,7 @@ public partial class DwarfBerserkerPresentation : Node3D
 
     private sealed class Limb
     {
-        public Node3D Upper, Middle, End, Grip;
+        public Node3D Upper, Middle, End, Grip, HandGrip;
         public Vector3 Start, Joint, Tip, Pole, GripOffset;
         public float UpperLength, LowerLength;
         public Vector3[] BootVertices;
@@ -46,6 +46,7 @@ public partial class DwarfBerserkerPresentation : Node3D
         {
             var arm = Capture(side + "ShoulderPivot", side + "ElbowPivot", side + "WristPivot");
             arm.Grip = _axe.GetNode<Node3D>(side + "Grip");
+            arm.HandGrip = Find(side + "Gauntlet").GetNode<Node3D>("GripPoint");
             arm.GripOffset = arm.Tip - ModelPosition(arm.Grip);
             _arms.Add(arm);
             var leg = Capture(side + "HipPivot", side + "KneePivot", side + "AnklePivot");
@@ -103,7 +104,16 @@ public partial class DwarfBerserkerPresentation : Node3D
         var weaponBasis = _model.GlobalBasis.Inverse() * _axe.GlobalBasis;
         var torsoBasis = _model.GlobalBasis.Inverse() * _torso.GlobalBasis;
         foreach (var arm in _arms)
+        {
             Solve(arm, ModelPosition(arm.Grip) + weaponBasis * arm.GripOffset, torsoBasis * arm.Pole, weaponBasis);
+            // Nested float transforms can leave the actual hand marker a few
+            // ten-thousandths from the predicted wrist target after turning.
+            // Correct only that small numerical residual at the hand endpoint;
+            // a genuinely unreachable IK target must remain visible for diagnosis.
+            var residual = arm.Grip.GlobalPosition - arm.HandGrip.GlobalPosition;
+            if (residual.LengthSquared() < 0.001f * 0.001f)
+                arm.End.GlobalPosition += residual;
+        }
         for (int i = 0; i < _legs.Count; i++)
         {
             var leg = _legs[i];

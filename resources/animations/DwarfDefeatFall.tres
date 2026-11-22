@@ -1,0 +1,90 @@
+[gd_resource type="AnimationLibrary" load_steps=2 format=3]
+
+[sub_resource type="Animation" id="Fall"]
+resource_name = "Fall"
+length = 1.55
+
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:rotation")
+tracks/0/interp = 1
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.12, 0.34, 0.64, 1.08, 1.55),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0.09, 0, 0), Vector3(-0.08, 0, -0.04), Vector3(-0.48, 0, -0.09), Vector3(-1.42, 0, -0.14), Vector3(-1.67, 0, -0.14)]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath(".:BodyOffset")
+tracks/1/interp = 1
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.12, 0.34, 0.64, 1.08, 1.55),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, -0.055, 0.015), Vector3(0, -0.04, 0.025), Vector3(0, -0.115, 0.005), Vector3(0, -0.18, -0.005), Vector3(0, -0.15, -0.005), Vector3(0, -0.15, -0.005)]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath(".:TorsoOrientation")
+tracks/2/interp = 1
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.12, 0.34, 0.64, 1.08, 1.55),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Quaternion(-0.05496798, -0.012480773, -0.000687136, 0.998409875), Quaternion(0.024997, -0.01248, 0, 0.99961), Quaternion(-0.149, -0.012, 0, 0.98875), Quaternion(-0.20, -0.012, 0, 0.97973), Quaternion(0.015, 0, 0, 0.999887), Quaternion(-0.025, 0, 0, 0.999687)]
+}
+tracks/3/type = "value"
+tracks/3/path = NodePath(".:HeadRotation")
+tracks/3/interp = 1
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.12, 0.34, 0.64, 1.08, 1.55),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0.045, 0, 0), Vector3(-0.11, 0, 0.035), Vector3(0.06, 0, -0.02), Vector3(0.16, 0, -0.03), Vector3(-0.11, 0, 0.04), Vector3(-0.14, 0, 0.04)]
+}
+tracks/4/type = "value"
+tracks/4/path = NodePath(".:WeaponOffset")
+tracks/4/interp = 1
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.12, 0.34, 0.64, 1.08, 1.55),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0.025, -0.08, 0.07), Vector3(0.025, -0.06, 0.1), Vector3(0.035, -0.10, 0.03), Vector3(0.045, -0.14, 0.01), Vector3(0.035, -0.12, 0.02), Vector3(0.035, -0.12, 0.02)]
+}
+tracks/5/type = "value"
+tracks/5/path = NodePath(".:WeaponOrientation")
+tracks/5/interp = 1
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.34, 0.64, 1.55),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Quaternion(-0.121804271, -0.026599034, -0.211682821, 0.969353699), Quaternion(-0.121804271, -0.026599034, -0.211682821, 0.969353699), Quaternion(-0.15, -0.025, -0.195, 0.969), Quaternion(-0.15, -0.025, -0.195, 0.969)]
+}
+tracks/6/type = "value"
+tracks/6/path = NodePath(".:BeardRotation")
+tracks/6/interp = 1
+tracks/6/keys = {
+"times": PackedFloat32Array(0, 0.12, 0.34, 0.64, 1.08, 1.55),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0.022, 0, 0), Vector3(-0.09, 0, 0), Vector3(0.07, 0, 0), Vector3(0.12, 0, 0), Vector3(-0.10, 0, 0), Vector3(-0.06, 0, 0)]
+}
+tracks/7/type = "value"
+tracks/7/path = NodePath(".:LeftFootOffset")
+tracks/7/interp = 1
+tracks/7/keys = {
+"times": PackedFloat32Array(0, 0.34, 0.64, 1.55),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(-0.04, 0, -0.055), Vector3(-0.07, 0, -0.09), Vector3(-0.07, 0, -0.09)]
+}
+tracks/8/type = "value"
+tracks/8/path = NodePath(".:RightFootOffset")
+tracks/8/interp = 1
+tracks/8/keys = {
+"times": PackedFloat32Array(0, 0.34, 0.64, 1.55),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0.04, 0, 0.035), Vector3(0.07, 0, 0.06), Vector3(0.07, 0, 0.06)]
+}
+
+[resource]
+_data = { &"Fall": SubResource("Fall") }

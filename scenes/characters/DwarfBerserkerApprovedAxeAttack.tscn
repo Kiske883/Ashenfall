@@ -1,0 +1,9 @@
+[gd_scene load_steps=5 format=3]
+[ext_resource type="PackedScene" path="res://scenes/characters/DwarfBerserkerGroundedExperiment.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/characters/DwarfApprovedAxeAttackPresentation.cs" id="2"]
+[ext_resource type="AnimationLibrary" path="res://resources/animations/DwarfGroundedExperiment.tres" id="3"]
+[ext_resource type="AnimationLibrary" path="res://resources/animations/DwarfApprovedAxeAttack.tres" id="4"]
+[node name="DwarfBerserkerApprovedAxeAttack" instance=ExtResource("1")]
+script = ExtResource("2")
+[node name="AnimationPlayer" parent="." index="1"]
+libraries = { &"": ExtResource("3"), &"Combat": ExtResource("4") }
