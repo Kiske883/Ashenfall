@@ -80,7 +80,7 @@ public sealed class CharacterMigrationStaticTests
     [Fact]
     public void EveryMappedCharacterColumnExistsInReviewedSql()
     {
-        string sql = Script("CharacterPersistence09B.sql");
+        string sql = Script("CharacterPersistence09B.sql") + "\n" + Script("InitialRpgCatalog.sql");
         var options = new DbContextOptionsBuilder<CharacterDbContext>()
             .UseNpgsql("Host=invalid.local;Database=not_used").Options;
         using var db = new CharacterDbContext(options);

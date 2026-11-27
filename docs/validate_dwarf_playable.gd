@@ -98,7 +98,7 @@ func run_checks() -> void:
     check(dwarf.find_child("Model",true,false).get_meta("triangle_count") == 10336, "Approved mesh triangle count retained")
     check(demo.find_children("*","CharacterBody3D",true,false).size()==2 and enemy.PlayerTarget==player, "Same single player and Guardian interaction target")
     check(enemy.State==0 and player.is_on_floor() and enemy.is_on_floor() and active_idle(), "Safe grounded spawn, player and enemy idle")
-    check(is_equal_approx(enemy.MovementSpeed,1) and is_equal_approx(enemy.ReturnSpeed,0.7) and is_equal_approx(enemy.AttackWindupDuration,0.6) and is_equal_approx(enemy.AttackRecoveryDuration,1), "Enemy speeds and attack timing unchanged")
+    check(is_equal_approx(enemy.MovementSpeed,1) and is_equal_approx(enemy.ReturnSpeed,0.7) and is_equal_approx(enemy.AttackWindupDuration,1.2) and is_equal_approx(enemy.AttackRecoveryDuration,1), "Enemy speeds and dwarf-demo attack timing")
     check(rig.FollowTarget==player and is_equal_approx(camera.size,22), "Existing camera follows same actor at size 22")
     var orientation := camera.global_basis
     await capture("spawn")

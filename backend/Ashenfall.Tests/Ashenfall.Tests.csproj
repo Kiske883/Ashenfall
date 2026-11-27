@@ -15,11 +15,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\MigrationReview\CharacterPersistence09B.sql" Link="MigrationReview\CharacterPersistence09B.sql" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\MigrationReview\InitialRpgCatalog.sql" Link="MigrationReview\InitialRpgCatalog.sql" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\MigrationReview\CharacterPersistence09B.Rollback.sql" Link="MigrationReview\CharacterPersistence09B.Rollback.sql" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\..\scripts\catalog\CatalogData.cs" Link="GodotCatalog\CatalogData.cs" />
     <Compile Include="..\..\scripts\catalog\CatalogContentHash.cs" Link="GodotCatalog\CatalogContentHash.cs" />
     <Compile Include="..\..\scripts\catalog\CatalogCodec.cs" Link="GodotCatalog\CatalogCodec.cs" />
     <Compile Include="..\..\scripts\catalog\CatalogApiClient.cs" Link="GodotCatalog\CatalogApiClient.cs" />
+    <Compile Include="..\..\scripts\characters\PersistedCharacterClient.cs" Link="GodotCharacter\PersistedCharacterClient.cs" />
     <Compile Include="..\..\scripts\catalog\CatalogService.cs" Link="GodotCatalog\CatalogService.cs" />
     <Compile Include="..\..\scripts\catalog\GameplayStatsResolver.cs" Link="GodotCatalog\GameplayStatsResolver.cs" />
     <Compile Include="..\..\scripts\combat\CombatDamageCalculator.cs" Link="Combat\CombatDamageCalculator.cs" />

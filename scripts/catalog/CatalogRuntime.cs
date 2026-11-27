@@ -28,8 +28,13 @@ public partial class CatalogRuntime : Node
         _lifetime = new CancellationTokenSource();
         try
         {
-            // Verified ASP.NET Core no-profile default. Override per machine with this environment variable.
-            string url = System.Environment.GetEnvironmentVariable("ASHENFALL_CATALOG_API_URL") ?? "http://localhost:5000";
+            // Loopback alone does not identify a trusted API. Require explicit configuration.
+            string? url = System.Environment.GetEnvironmentVariable("ASHENFALL_CATALOG_API_URL");
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                _configurationError = "Catalog API URL is not configured; set ASHENFALL_CATALOG_API_URL explicitly.";
+                return;
+            }
             _http = new HttpClient();
             _service = new CatalogService(new CatalogApiClient(_http, CatalogApiClient.ParseBaseUri(url),
                 TimeSpan.FromSeconds(5)));

@@ -7,6 +7,69 @@ namespace Ashenfall.Tests;
 
 public sealed class CharacterAndCombatTests
 {
+    [Theory]
+    [InlineData(0.049999, true, 54)]
+    [InlineData(0.05, false, 27)]
+    [InlineData(0.5, false, 27)]
+    public void PublishedReferenceStatsDriveCriticalChanceAndDamage(double roll, bool critical, int damage)
+    {
+        var effective = CharacterRules.CalculateCombatStats(25, 25, 5, 100, 2, 0, 0, []);
+        var result = CombatDamageCalculator.CalculatePercent(effective.MinDamage, effective.MaxDamage,
+            (double)effective.CriticalChancePercent, (double)effective.CriticalDamageBonusPercent,
+            new FixedRandom(27, roll));
+        Assert.Equal(critical, result.Critical);
+        Assert.Equal(damage, result.FinalDamage);
+    }
+
+    [Fact]
+    public void EffectiveChanceChangesTheResultForTheSameControlledRandomInput()
+    {
+        var baseStats = CharacterRules.CalculateCombatStats(25, 25, 5, 100, 2, 0, 0, []);
+        var equippedStats = CharacterRules.CalculateCombatStats(25, 25, 5, 100, 2, 0, 0,
+            [new ItemModifierRow { StatCode = "critical_chance", ModifierKind = "flat", Amount = 10 }]);
+        Assert.False(CombatDamageCalculator.CalculatePercent(baseStats.MinDamage, baseStats.MaxDamage,
+            (double)baseStats.CriticalChancePercent, (double)baseStats.CriticalDamageBonusPercent,
+            new FixedRandom(27, 0.10)).Critical);
+        Assert.True(CombatDamageCalculator.CalculatePercent(equippedStats.MinDamage, equippedStats.MaxDamage,
+            (double)equippedStats.CriticalChancePercent, (double)equippedStats.CriticalDamageBonusPercent,
+            new FixedRandom(27, 0.10)).Critical);
+    }
+    [Fact]
+    public void CombatStatModifiersAddPercentagePointsAndLevelDamage()
+    {
+        var modifiers = new[] {
+            new ItemModifierRow { StatCode = "critical_chance", ModifierKind = "flat", Amount = 10 },
+            new ItemModifierRow { StatCode = "critical_multiplier", ModifierKind = "flat", Amount = 50 }
+        };
+        var stats = CharacterRules.CalculateCombatStats(8, 8, 5, 100, 2, 0, 0, modifiers);
+        Assert.Equal((10, 10, 15m, 150m), (stats.MinDamage, stats.MaxDamage, stats.CriticalChancePercent, stats.CriticalDamageBonusPercent));
+        Assert.Equal(25, CombatDamageCalculator.CalculatePercent(stats.MinDamage, stats.MaxDamage,
+            (double)stats.CriticalChancePercent, (double)stats.CriticalDamageBonusPercent, new FixedRandom(10, 0.1)).FinalDamage);
+        modifiers[0].ModifierKind = "percent";
+        Assert.Throws<ArgumentException>(() => CharacterRules.CalculateCombatStats(8, 8, 5, 100, 2, 0, 0, modifiers));
+    }
+    [Theory]
+    [InlineData(100, 20)]
+    [InlineData(150, 25)]
+    [InlineData(200, 30)]
+    [InlineData(300, 40)]
+    public void CriticalBonusUsesAdditivePercentagePoints(double bonus, int expected)
+    {
+        var result = CombatDamageCalculator.CalculatePercent(10, 10, 15, bonus, new FixedRandom(10, 0.149));
+        Assert.True(result.Critical);
+        Assert.Equal(expected, result.FinalDamage);
+    }
+
+    [Fact]
+    public void PercentBasedCriticalChanceUsesStrictBoundariesAndRejectsInvalidValues()
+    {
+        Assert.False(CombatDamageCalculator.CalculatePercent(10, 20, 0, 100, new FixedRandom(10, 0)).Critical);
+        Assert.True(CombatDamageCalculator.CalculatePercent(10, 20, 100, 100, new FixedRandom(20, 0.999)).Critical);
+        Assert.False(CombatDamageCalculator.CalculatePercent(10, 20, 15, 100, new FixedRandom(10, 0.15)).Critical);
+        Assert.Throws<ArgumentOutOfRangeException>(() => CombatDamageCalculator.CalculatePercent(1, 2, 101, 100, new FixedRandom(1, 0)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => CombatDamageCalculator.CalculatePercent(1, 2, 5, -1, new FixedRandom(1, 0)));
+        Assert.Throws<OverflowException>(() => CombatDamageCalculator.CalculatePercent(1_000_000, 1_000_000, 100, double.MaxValue, new FixedRandom(1_000_000, 0)));
+    }
     private sealed class FixedRandom(int roll, double chance) : ICombatRandom
     {
         public int NextIntInclusive(int minimum, int maximum) => roll;

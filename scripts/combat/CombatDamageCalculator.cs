@@ -25,6 +25,17 @@ public readonly record struct CombatDamageResult(int RolledDamage, bool Critical
 /// <summary>Pure local impact formula. Armor is recorded but not mitigated until its rule is approved.</summary>
 public static class CombatDamageCalculator
 {
+    /// <summary>Percentage points: 5 is five percent chance; a 100 bonus doubles damage.</summary>
+    public static CombatDamageResult CalculatePercent(int minimum, int maximum,
+        double criticalChancePercent, double criticalDamageBonusPercent, ICombatRandom random)
+    {
+        if (!double.IsFinite(criticalChancePercent) || criticalChancePercent < 0 || criticalChancePercent > 100 ||
+            !double.IsFinite(criticalDamageBonusPercent) || criticalDamageBonusPercent < 0)
+            throw new ArgumentOutOfRangeException(nameof(criticalChancePercent));
+        double multiplier = 1 + criticalDamageBonusPercent / 100;
+        if (!double.IsFinite(multiplier)) throw new OverflowException("Critical multiplier exceeds the supported range.");
+        return Calculate(new CombatDamageProfile(minimum, maximum, criticalChancePercent / 100, multiplier), random);
+    }
     public static CombatDamageResult Calculate(CombatDamageProfile profile, ICombatRandom random)
     {
         ArgumentNullException.ThrowIfNull(random);

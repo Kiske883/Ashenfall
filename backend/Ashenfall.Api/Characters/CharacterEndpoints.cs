@@ -2,6 +2,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Ashenfall.Api.Characters;
 
@@ -38,6 +39,22 @@ public static class CharacterEndpoints
         {
             var account = await service.FindAccountAsync("local_development", subject, ct);
             return account is null ? Results.NotFound() : Results.Ok(await service.GetActiveAsync(account.Id, ct));
+        });
+        group.MapGet("/gameplay-snapshot", async (CharacterDbContext db, CancellationToken ct) =>
+        {
+            try
+            {
+                var v2 = await new GameplaySnapshotV2Reader(db).ReadAsync("local_development", subject, ct);
+                if (v2.IsV2) return v2.Snapshot is null ? Results.NotFound() : Results.Ok(v2.Snapshot);
+                var snapshot = await new CharacterGameplaySnapshotReader(db).ReadAsync("local_development", subject, ct);
+                return snapshot is null ? Results.NotFound() : Results.Ok(snapshot);
+            }
+            catch (InvalidGameplaySnapshotException) { return Results.Problem(statusCode: 500, title: "Invalid character gameplay data."); }
+            catch (NpgsqlException) { return Results.Problem(statusCode: 503, title: "Character data unavailable."); }
+            catch (TimeoutException) { return Results.Problem(statusCode: 503, title: "Character data unavailable."); }
+            catch (InvalidOperationException e) when (e.InnerException is NpgsqlException)
+            { return Results.Problem(statusCode: 503, title: "Character data unavailable."); }
+            catch (InvalidOperationException) { return Results.Problem(statusCode: 500, title: "Invalid character gameplay data."); }
         });
         group.MapPost("/", async (CreateCharacterRequest request, CharacterService service, CancellationToken ct) =>
             await Safe(async () =>
