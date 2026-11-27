@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Ashenfall.Api.Catalog.Domain;
+using Ashenfall.Api.Catalog.Persistence;
 
 namespace Ashenfall.Api.Characters;
 
@@ -66,9 +68,17 @@ public sealed class CharacterDbContext(DbContextOptions<CharacterDbContext> opti
     public DbSet<EquipmentRow> Equipment => Set<EquipmentRow>();
     public DbSet<LevelRuleRow> LevelRules => Set<LevelRuleRow>();
     public DbSet<ItemModifierRow> ItemModifiers => Set<ItemModifierRow>();
+    public DbSet<CharacterClass> SnapshotClasses => Set<CharacterClass>();
+    public DbSet<CatalogRelease> SnapshotReleases => Set<CatalogRelease>();
+    public DbSet<EnemyDefinition> SnapshotEnemies => Set<EnemyDefinition>();
+    public DbSet<ItemDefinition> SnapshotItems => Set<ItemDefinition>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
+        model.ApplyConfiguration(new CatalogReleaseConfiguration());
+        model.ApplyConfiguration(new CharacterClassConfiguration());
+        model.ApplyConfiguration(new EnemyDefinitionConfiguration());
+        model.ApplyConfiguration(new ItemDefinitionConfiguration());
         model.Entity<AccountRow>(e => { e.ToTable("accounts"); e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id");
             e.Property(x => x.IdentityProvider).HasColumnName("identity_provider");

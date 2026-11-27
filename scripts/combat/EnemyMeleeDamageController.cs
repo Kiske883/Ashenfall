@@ -100,10 +100,11 @@ public partial class EnemyMeleeDamageController : Node
             amount = result.FinalDamage;
             LastImpactCritical = result.Critical;
         }
+        int before = TargetHealth.CurrentHealth;
         if (amount > 0 && TargetHealth.ApplyDamage(amount))
         {
             SuccessfulHits++;
-            EmitSignal(SignalName.DamageApplied, target, amount, sequence);
+            EmitSignal(SignalName.DamageApplied, target, before - TargetHealth.CurrentHealth, sequence);
         }
     }
 }

@@ -2,9 +2,40 @@ namespace Ashenfall.Api.Characters;
 
 public sealed record EffectiveCharacterStats(int Level, int MaxHealth, int Damage,
     int Strength, int Dexterity, int Vitality, int Armor);
+public sealed record EffectiveCombatStats(int MinDamage, int MaxDamage,
+    decimal CriticalChancePercent, decimal CriticalDamageBonusPercent);
 
 public static class CharacterRules
 {
+    /// <summary>Critical modifiers are additive percentage points, not relative percentages.</summary>
+    public static EffectiveCombatStats CalculateCombatStats(int minimum, int maximum,
+        decimal criticalChancePercent, decimal criticalBonusPercent, int levelDamageBonus,
+        decimal levelCriticalChanceBonus, decimal levelCriticalDamageBonus,
+        IReadOnlyList<ItemModifierRow> modifiers)
+    {
+        if (minimum < 0 || maximum < minimum || criticalChancePercent < 0 || criticalChancePercent > 100 ||
+            criticalBonusPercent < 0 || levelDamageBonus < 0)
+            throw new ArgumentOutOfRangeException(nameof(minimum), "Invalid base combat statistics.");
+        decimal Modifier(string stat, string kind) => modifiers.Where(x => x.StatCode == stat && x.ModifierKind == kind).Sum(x => x.Amount);
+        if (modifiers.Any(x => (x.StatCode is "fixed_damage" or "min_damage" or "max_damage") && x.ModifierKind is not ("flat" or "percent")))
+            throw new ArgumentException("Unsupported damage modifier kind.");
+        if (modifiers.Any(x => (x.StatCode is "critical_chance" or "critical_multiplier") && x.ModifierKind != "flat"))
+            throw new ArgumentException("Critical modifiers must be flat percentage points.");
+        decimal Damage(int value, string stat)
+        {
+            decimal flat = Modifier("fixed_damage", "flat") + Modifier(stat, "flat");
+            decimal percent = Modifier("fixed_damage", "percent") + Modifier(stat, "percent");
+            decimal result = Math.Round((value + (decimal)levelDamageBonus + flat) * (1 + percent / 100), 0, MidpointRounding.AwayFromZero);
+            if (result < 0 || result >= int.MaxValue) throw new ArgumentOutOfRangeException(nameof(modifiers), "Damage is outside the supported range.");
+            return result;
+        }
+        int min = (int)Damage(minimum, "min_damage");
+        int max = (int)Damage(maximum, "max_damage");
+        decimal chance = criticalChancePercent + levelCriticalChanceBonus + Modifier("critical_chance", "flat");
+        decimal bonus = criticalBonusPercent + levelCriticalDamageBonus + Modifier("critical_multiplier", "flat");
+        if (chance < 0 || bonus < 0 || min > max) throw new ArgumentOutOfRangeException(nameof(modifiers), "Invalid effective combat statistics.");
+        return new EffectiveCombatStats(min, max, Math.Min(chance, 100), bonus);
+    }
     public static void ValidateProgression(IReadOnlyList<LevelRuleRow> rules)
     {
         if (rules.Count is < 1 or > 1000) throw new ArgumentException("Progression needs 1 to 1000 levels.");
@@ -74,7 +105,8 @@ public static class CharacterRules
     public static EffectiveCharacterStats CalculateStats(int baseHealth, int baseDamage,
         int baseStrength, int baseDexterity, int baseVitality, int baseArmor,
         CharacterRow character, IReadOnlyList<LevelRuleRow> progression,
-        IReadOnlyList<ItemModifierRow> equipment, IReadOnlyDictionary<string, decimal>? temporary = null)
+        IReadOnlyList<ItemModifierRow> equipment, IReadOnlyDictionary<string, decimal>? temporary = null,
+        bool rejectOutOfRange = false)
     {
         int level = DeriveLevel(character.Experience, progression);
         var levelRule = progression.Single(x => x.Level == level);
@@ -83,8 +115,11 @@ public static class CharacterRules
             decimal flat = equipment.Where(x => x.StatCode == key && x.ModifierKind == "flat").Sum(x => x.Amount);
             decimal percent = equipment.Where(x => x.StatCode == key && x.ModifierKind == "percent").Sum(x => x.Amount);
             decimal runtime = temporary is not null && temporary.TryGetValue(key, out var value) ? value : 0;
-            return Math.Clamp(Math.Round((authored + flat) * (1 + percent / 100) + runtime,
-                0, MidpointRounding.AwayFromZero), 0, int.MaxValue);
+            decimal computed = (authored + flat) * (1 + percent / 100) + runtime;
+            if (rejectOutOfRange && (computed < 0 || computed > int.MaxValue))
+                throw new ArgumentOutOfRangeException(nameof(equipment), "Effective statistic is outside the supported range.");
+            decimal rounded = Math.Round(computed, 0, MidpointRounding.AwayFromZero);
+            return Math.Clamp(rounded, 0, int.MaxValue);
         }
         return new EffectiveCharacterStats(level,
             (int)Stat("max_health", (decimal)baseHealth + levelRule.HealthBonus),

@@ -87,6 +87,9 @@ func run() -> void:
     var bar_mesh: MeshInstance3D = bar.get_node("Bar")
     var melee: Node = demo.get_node("PlayerMelee")
     var resolver: Node = demo.get_node("MeleeDamage")
+    var feedback: Node = demo.get_node("CombatFeedback")
+    var applied_amounts := []
+    resolver.connect("DamageApplied", func(_target: Node3D, amount: int, _sequence: int): applied_amounts.append(amount))
     var camera: Camera3D = world.get_node("CameraRig/Camera3D")
     var deaths := []
     var enemy_attacks := []
@@ -132,6 +135,9 @@ func run() -> void:
     check(health.CurrentHealth == 75 and resolver.SuccessfulHits == 1 and
         bar_pixels(bar, texture, 0.75, bar.HealthyColor, bar.BackgroundColor),
         "75 HP is one 75% green bar")
+    var numbers = feedback.find_children("DamageNumber*", "Label3D", true, false)
+    check(applied_amounts == [25] and numbers.size() == 1 and numbers[0].text == "25",
+        "Successful standalone hit displays the applied 25 damage")
     await capture("damaged")
     check(not resolver.TryApplyImpact(marker, first) and health.CurrentHealth == 75,
         "Duplicate impact for the same sequence is rejected")
@@ -204,12 +210,16 @@ func run() -> void:
         if enemy.State == 4: break
         await physics_frame
     check(enemy.State == 4, "Guardian enters an active attack windup before defeat")
+    resolver.Damage = 40
     check(melee.IssueAttack(marker) and await wait_attack(melee), "Lethal attack starts during enemy windup")
     var lethal: int = melee.AttackSequence
     check(await wait_impact(melee, lethal), "Lethal attack reaches impact")
     await ticks(2)
     check(health.CurrentHealth == 0 and deaths.size() == 1 and enemy.State == 6 and enemy.PlayerTarget == null,
         "Fourth hit defeats Guardian exactly once")
+    numbers = feedback.find_children("DamageNumber*", "Label3D", true, false)
+    check(applied_amounts.back() == 25 and numbers.size() == 1 and numbers[0].text == "25",
+        "Overkill displays actual remaining health reduction")
     check(not marker.CanBeTargeted and enemy.get_node("CollisionShape3D").disabled and
         enemy.collision_layer == 0 and enemy.collision_mask == 0,
         "Defeated Guardian loses targetability and collision safely")

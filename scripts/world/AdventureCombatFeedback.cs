@@ -6,13 +6,16 @@ using System.Collections.Generic;
 
 namespace Ashenfall.World;
 
-/// <summary>Adventure-only visual feedback and silent audio cues; never resolves combat.</summary>
+/// <summary>Visual feedback and silent audio cues; never resolves combat.</summary>
 public partial class AdventureCombatFeedback : Node3D
 {
     [Signal] public delegate void SoundCueRequestedEventHandler(StringName cue, Vector3 position);
 
     [Export(PropertyHint.Range, "0.05,1,0.01")] public float FlashSeconds { get; set; } = 0.16f;
-    [Export(PropertyHint.Range, "0.05,1,0.01")] public float NumberSeconds { get; set; } = 0.58f;
+    [Export(PropertyHint.Range, "0.8,1.2,0.01")] public float NumberSeconds { get; set; } = 1.0f;
+    [Export] public Color DealtColor { get; set; } = new(1f, 0.92f, 0.78f);
+    [Export] public Color ReceivedColor { get; set; } = new(0.9f, 0.30f, 0.27f);
+    [Export] public Color CriticalColor { get; set; } = Colors.Yellow;
     public int FeedbackCount { get; private set; }
     public int AudioCueCount { get; private set; }
     public int ActiveNumberCount => _numbers.Count;
@@ -24,6 +27,7 @@ public partial class AdventureCombatFeedback : Node3D
     }
 
     private readonly Dictionary<Node3D, Flash> _flashes = new();
+    private readonly List<Node3D> _expiredFlashes = new();
     private readonly Dictionary<ulong, int> _lastSequence = new();
     private readonly Dictionary<EnemyMeleeDamageController, EnemyMeleeDamageController.DamageAppliedEventHandler> _enemyDamageHandlers = new();
     private readonly Dictionary<EnemyController, EnemyController.AttackExecutedEventHandler> _enemyAttackHandlers = new();
@@ -189,19 +193,18 @@ public partial class AdventureCombatFeedback : Node3D
         cleanup.TweenCallback(Callable.From(burst.QueueFree));
     }
 
-    private void SpawnNumber(Node3D actor, int amount, bool player, bool critical)
+    private void SpawnNumber(Node3D actor, int amount, bool playerWasHit, bool critical)
     {
-        var color = critical ? new Color(1, 0.83f, 0.24f) :
-            player ? new Color(1, 0.46f, 0.40f) : new Color(1, 0.88f, 0.60f);
+        var color = critical ? CriticalColor : playerWasHit ? ReceivedColor : DealtColor;
         var label = new Label3D
         {
-            Name = "DamageNumber", Text = critical ? $"CRIT -{amount}" : $"-{amount}",
-            FontSize = critical ? 66 : 60, PixelSize = 0.007f,
+            Name = "DamageNumber", Text = $"{amount}",
+            FontSize = 60, PixelSize = 0.007f,
             Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
-            NoDepthTest = true, OutlineSize = 7, Modulate = color,
-            Position = actor.GlobalPosition + Vector3.Up * (player ? 1.72f : 2.62f)
+            NoDepthTest = true, OutlineSize = 7, Modulate = color
         };
         AddChild(label);
+        label.GlobalPosition = actor.GlobalPosition + Vector3.Up * (playerWasHit ? 1.72f : 2.62f);
         _numbers.Add(label);
         var tween = label.CreateTween().SetParallel(true);
         tween.TweenProperty(label, "position", label.Position + new Vector3(0, 0.34f, 0), NumberSeconds);
@@ -213,13 +216,13 @@ public partial class AdventureCombatFeedback : Node3D
 
     public override void _Process(double delta)
     {
-        var expired = new List<Node3D>();
+        _expiredFlashes.Clear();
         foreach (var (actor, flash) in _flashes)
         {
             flash.Remaining -= (float)delta;
-            if (flash.Remaining <= 0 || !GodotObject.IsInstanceValid(actor)) expired.Add(actor);
+            if (flash.Remaining <= 0 || !GodotObject.IsInstanceValid(actor)) _expiredFlashes.Add(actor);
         }
-        foreach (var actor in expired) RestoreFlash(actor);
+        foreach (var actor in _expiredFlashes) RestoreFlash(actor);
         if (!GodotObject.IsInstanceValid(_dwarfAnimation) || _dwarf.Defeated ||
             _dwarfAnimation.CurrentAnimation != "Combat/CombatWalk" || _dwarf.ActualHorizontalSpeed < 0.08f)
         {

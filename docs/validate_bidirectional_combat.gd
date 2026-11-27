@@ -65,10 +65,10 @@ func run() -> void:
     await fixture()
     check(health.MaximumHealth == 100 and health.CurrentHealth == 100 and health.IsAlive,
         "Player starts with 100 HP")
-    check(is_equal_approx(enemy.AttackWindupDuration, 0.6) and
+    check(is_equal_approx(enemy.AttackWindupDuration, 1.2) and
         is_equal_approx(enemy.AttackRecoveryDuration, 1.0) and
         is_equal_approx(damage.ImpactDelay, 0.1) and damage.Damage == 10,
-        "AI timing unchanged; impact is 0.70 s and damage is 10")
+        "Dwarf demo anticipation 1.20 s; impact 1.30 s and damage 10")
     check(mouse_filters_ignored(hud), "HUD controls ignore all mouse input")
     var panel: Control = hud.get_node("Panel")
     var bar: ProgressBar = hud.get_node("Panel/Bar")

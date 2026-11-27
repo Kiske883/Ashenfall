@@ -88,7 +88,7 @@ func run() -> void:
     check(not damage.TryApplyImpact(enemy.get_node("MeleeTarget"), melee.ImpactSequence) and
         feedback.FeedbackCount == 1,
         "Duplicate player impact creates neither damage nor effects")
-    await ticks(45)
+    await ticks(70)
     check(feedback.ActiveNumberCount == 0 and feedback.find_children("ImpactSparks", "Node3D", true, false).is_empty(),
         "Damage number and sparks are transient")
 
